@@ -1,70 +1,199 @@
-# Getting Started with Create React App
+# 🏁 Trackmania COTD Analyzer
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![React](https://img.shields.io/badge/React-18.3.1-blue.svg)](https://reactjs.org/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4.17-38B2AC.svg)](https://tailwindcss.com/)
+[![Recharts](https://img.shields.io/badge/Recharts-2.10.3-8884d8.svg)](https://recharts.org/)
 
-## Available Scripts
+A modern, feature-rich web application for analyzing your Trackmania Cup of the Day (COTD) performance. Get detailed insights, track your progress, and discover patterns in your racing data.
 
-In the project directory, you can run:
+## ✨ Features
 
-### `npm start`
+### 🎯 Core Analytics
+- **Performance Tracking**: Visualize your percentile rankings over time
+- **Division Analysis**: Track your division placements and progress
+- **Trend Analysis**: Identify improvement patterns with moving averages and trendlines
+- **Map Type Performance**: Analyze your strengths across different map types
+- **Points System**: Custom scoring system based on division and rank
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+### 🚀 Advanced Features
+- **Smart Notifications**: AI-powered insights that detect improvements, streaks, and patterns
+- **Advanced Search**: Filter data by date, division, percentile, map type, and more
+- **Keyboard Shortcuts**: 14+ shortcuts for power users (Ctrl+K, Ctrl+1-5, etc.)
+- **Interactive Charts**: Zoom, brush, and explore your data with Recharts
+- **Data Export/Import**: JSON export for backup and sharing
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+### 🎨 User Experience
+- **Guided Onboarding**: Interactive tour for new users
+- **Floating Action Button**: Quick access to common actions
+- **Glass Morphism Design**: Modern UI with backdrop blur effects
+- **Responsive Design**: Works perfectly on desktop and mobile
+- **Internationalization**: Available in English and German
 
-### `npm test`
+### 🔒 Privacy & Security
+- **Local Storage Only**: Your data never leaves your browser
+- **No Server Required**: Completely client-side application
+- **GDPR Compliant**: No tracking, no cookies, no data collection
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## 🚀 Quick Start
 
-### `npm run build`
+### Option 1: Use Online (Recommended)
+Visit the live application: **[trackmania-cotd-analyzer.vercel.app](https://trackmania-cotd-analyzer.vercel.app)**
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### Option 2: Run Locally
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/yourusername/trackmania-cotd-analyzer.git
+   cd trackmania-cotd-analyzer
+   ```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
 
-### `npm run eject`
+3. **Start the development server**
+   ```bash
+   npm start
+   ```
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+4. **Open your browser**
+   Navigate to `http://localhost:3000`
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+## 📊 How to Use
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+### 1. Import Your Data
+- Go to your Trackmania profile
+- Navigate to your Cup of the Day results
+- Copy the results (Ctrl+C)
+- Paste them into the analyzer
+- Click "Process Data"
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+### 2. Explore Your Analytics
+- **Performance View**: See your percentile rankings over time
+- **Division Distribution**: Understand your division placements
+- **Division Progress**: Track your division improvements
+- **Points Progress**: Monitor your custom point scoring
+- **Division Rank**: Analyze your positions within divisions
 
-## Learn More
+### 3. Use Advanced Features
+- Press `Ctrl+K` for advanced search
+- Use `Ctrl+1-5` to switch between views quickly
+- Press `?` to see all keyboard shortcuts
+- Export your data for backup with `Ctrl+E`
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+## 🛠️ Technical Stack
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+- **Frontend**: React 18.3.1 with Hooks
+- **Styling**: Tailwind CSS 3.4.17 with custom animations
+- **Charts**: Recharts 2.10.3 for data visualization
+- **Build Tool**: Create React App
+- **Internationalization**: Custom i18n system
+- **State Management**: React useState/useEffect
 
-### Code Splitting
+## 🎨 Design Philosophy
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+- **User-Centric**: Every feature designed with user experience in mind
+- **Performance First**: Optimized for speed and responsiveness
+- **Accessibility**: WCAG compliant with keyboard navigation
+- **Modern**: Glass morphism, smooth animations, and micro-interactions
+- **Privacy-Focused**: No data collection, completely local
 
-### Analyzing the Bundle Size
+## 🌍 Internationalization
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+Currently supported languages:
+- 🇺🇸 **English** (Default)
+- 🇩🇪 **German** (Deutsch)
 
-### Making a Progressive Web App
+Want to add your language? See [Contributing](#contributing) below!
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+## 📱 Browser Support
 
-### Advanced Configuration
+- ✅ Chrome 90+
+- ✅ Firefox 88+
+- ✅ Safari 14+
+- ✅ Edge 90+
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+## 🤝 Contributing
 
-### Deployment
+We welcome contributions! Here's how you can help:
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+### 🌐 Add a New Language
+1. Fork the repository
+2. Add your translations to `src/i18n/translations.js`
+3. Add your language to `src/components/LanguageSelector.js`
+4. Test the translation
+5. Submit a pull request
 
-### `npm run build` fails to minify
+### 🐛 Report Bugs
+- Use the [Issues](https://github.com/yourusername/trackmania-cotd-analyzer/issues) tab
+- Include steps to reproduce
+- Add screenshots if applicable
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+### 💡 Suggest Features
+- Open a [Feature Request](https://github.com/yourusername/trackmania-cotd-analyzer/issues/new?template=feature_request.md)
+- Describe the use case
+- Explain why it would be valuable
+
+### 🔧 Development Setup
+```bash
+# Clone and install
+git clone https://github.com/yourusername/trackmania-cotd-analyzer.git
+cd trackmania-cotd-analyzer
+npm install
+
+# Start development server
+npm start
+
+# Run tests
+npm test
+
+# Build for production
+npm run build
+```
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- **Ubisoft/Nadeo** for creating Trackmania
+- **Trackmania.io** for providing COTD data
+- **React Team** for the amazing framework
+- **Tailwind CSS** for the utility-first CSS framework
+- **Recharts** for the beautiful chart library
+
+## 📞 Support
+
+- 📧 **Email**: support@trackmania-analyzer.com
+- 💬 **Discord**: [Join our community](https://discord.gg/trackmania-analyzer)
+- 🐛 **Issues**: [GitHub Issues](https://github.com/yourusername/trackmania-cotd-analyzer/issues)
+
+## 🔄 Changelog
+
+### v2.0.0 (Latest)
+- ✨ Complete UI/UX overhaul
+- 🚀 Smart notifications system
+- ⌨️ Keyboard shortcuts
+- 🔍 Advanced search and filtering
+- 🌍 Internationalization (EN/DE)
+- 🎨 Glass morphism design
+- 📱 Mobile-first responsive design
+
+### v1.0.0
+- 📊 Basic COTD data analysis
+- 📈 Performance charts
+- 📋 Results table
+- 💾 Local data storage
+
+---
+
+<div align="center">
+
+**Made with ❤️ for the Trackmania community**
+
+[⭐ Star this repo](https://github.com/yourusername/trackmania-cotd-analyzer) • [🐛 Report Bug](https://github.com/yourusername/trackmania-cotd-analyzer/issues) • [💡 Request Feature](https://github.com/yourusername/trackmania-cotd-analyzer/issues)
+
+</div>

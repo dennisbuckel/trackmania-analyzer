@@ -1,28 +1,65 @@
 {
-  "name": "trackmania-analyzer",
-  "version": "0.1.0",
+  "name": "trackmania-cotd-analyzer",
+  "version": "2.0.0",
+  "description": "A modern, feature-rich web application for analyzing your Trackmania Cup of the Day (COTD) performance",
+  "keywords": [
+    "trackmania",
+    "cotd",
+    "cup-of-the-day",
+    "racing",
+    "analytics",
+    "performance",
+    "react",
+    "charts",
+    "gaming"
+  ],
+  "homepage": "https://trackmania-cotd-analyzer.vercel.app",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/trackmania-cotd-analyzer.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yourusername/trackmania-cotd-analyzer/issues"
+  },
+  "author": {
+    "name": "Trackmania COTD Analyzer Team",
+    "email": "support@trackmania-analyzer.com",
+    "url": "https://github.com/yourusername/trackmania-cotd-analyzer"
+  },
+  "license": "MIT",
   "private": true,
   "dependencies": {
-    "@testing-library/dom": "^10.4.0",
-    "@testing-library/jest-dom": "^6.6.3",
-    "@testing-library/react": "^16.2.0",
+    "@testing-library/jest-dom": "^5.17.0",
+    "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
     "react-scripts": "5.0.1",
+    "recharts": "^2.10.3",
     "web-vitals": "^2.1.4"
   },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "analyze": "npm run build && npx source-map-explorer 'build/static/js/*.js'",
+    "lint": "eslint src --ext .js,.jsx",
+    "lint:fix": "eslint src --ext .js,.jsx --fix",
+    "format": "prettier --write src/**/*.{js,jsx,css,md}",
+    "type-check": "tsc --noEmit",
+    "pre-commit": "npm run lint && npm run format && npm run test -- --coverage --watchAll=false"
   },
   "eslintConfig": {
     "extends": [
       "react-app",
       "react-app/jest"
-    ]
+    ],
+    "rules": {
+      "no-console": "warn",
+      "no-unused-vars": "warn",
+      "react-hooks/exhaustive-deps": "warn"
+    }
   },
   "browserslist": {
     "production": [
@@ -35,5 +72,14 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.5.3",
+    "tailwindcss": "^3.4.17"
+  },
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
   }
 }
