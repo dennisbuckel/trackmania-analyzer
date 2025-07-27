@@ -1,9 +1,13 @@
 // src/components/SmartNotifications.js
 import React, { useState, useEffect } from 'react';
+import { getTranslation } from '../i18n/translations';
 
 const SmartNotifications = ({ playerData, onDismiss }) => {
   const [notifications, setNotifications] = useState([]);
   const [isVisible, setIsVisible] = useState(false);
+  
+  // Language is now fixed to English
+  const t = (key, params = {}) => getTranslation(key, 'en', params);
 
   useEffect(() => {
     if (playerData && playerData.length > 0) {
@@ -31,9 +35,9 @@ const SmartNotifications = ({ playerData, onDismiss }) => {
             id: 'improvement',
             type: 'success',
             icon: '📈',
-            title: 'Starke Verbesserung!',
-            message: `Du hast dich in den letzten 5 Rennen um ${improvement.toFixed(1)}% verbessert!`,
-            action: 'Performance anzeigen',
+            title: t('notifications.improvement'),
+            message: t('notifications.improvementMsg', { percent: improvement.toFixed(1) }),
+            action: 'Show Performance',
             priority: 'high'
           });
         }
@@ -47,9 +51,9 @@ const SmartNotifications = ({ playerData, onDismiss }) => {
         id: 'div1-streak',
         type: 'achievement',
         icon: '🏆',
-        title: 'Division 1 Serie!',
-        message: `${div1Streak} aufeinanderfolgende Division 1 Platzierungen!`,
-        action: 'Statistiken anzeigen',
+        title: t('notifications.div1Streak'),
+        message: t('notifications.div1StreakMsg', { count: div1Streak }),
+        action: 'Show Statistics',
         priority: 'high'
       });
     }
@@ -62,26 +66,13 @@ const SmartNotifications = ({ playerData, onDismiss }) => {
         id: 'personal-best',
         type: 'achievement',
         icon: '🎯',
-        title: 'Neuer Rekord!',
-        message: `Beste Platzierung: Top ${bestPercentile.toFixed(1)}% auf ${latestBest.map}`,
-        action: 'Details anzeigen',
+        title: t('notifications.personalBest'),
+        message: t('notifications.personalBestMsg', { percent: bestPercentile.toFixed(1), map: latestBest.map }),
+        action: 'Show Details',
         priority: 'high'
       });
     }
 
-    // Map-Typ Empfehlung
-    const mapTypeStats = analyzeMapTypePerformance(data);
-    if (mapTypeStats.bestType && mapTypeStats.worstType) {
-      notifications.push({
-        id: 'map-recommendation',
-        type: 'tip',
-        icon: '💡',
-        title: 'Performance-Tipp',
-        message: `Du performst am besten auf ${mapTypeStats.bestType}-Maps (${mapTypeStats.bestAvg.toFixed(1)}% avg). Übe mehr ${mapTypeStats.worstType}-Maps!`,
-        action: 'Map-Analyse anzeigen',
-        priority: 'medium'
-      });
-    }
 
     // Konsistenz-Warnung
     const recentVariance = calculatePerformanceVariance(data.slice(0, 10));
@@ -90,9 +81,9 @@ const SmartNotifications = ({ playerData, onDismiss }) => {
         id: 'consistency-warning',
         type: 'warning',
         icon: '⚠️',
-        title: 'Inkonsistente Performance',
-        message: `Deine letzten Ergebnisse schwanken stark. Fokussiere dich auf Konsistenz!`,
-        action: 'Trends anzeigen',
+        title: t('notifications.consistencyWarning'),
+        message: t('notifications.consistencyWarningMsg'),
+        action: 'Show Trends',
         priority: 'medium'
       });
     }
@@ -108,9 +99,9 @@ const SmartNotifications = ({ playerData, onDismiss }) => {
           id: 'qualification-tip',
           type: 'tip',
           icon: '🎯',
-          title: 'Qualifikations-Stärke!',
-          message: `Du qualifizierst dich besser als du im Finale abschneidest. Arbeite an deiner Nervenstärke!`,
-          action: 'Quali-Stats anzeigen',
+          title: t('notifications.qualificationTip'),
+          message: t('notifications.qualificationTipMsg'),
+          action: 'Show Quali Stats',
           priority: 'low'
         });
       }
@@ -134,38 +125,6 @@ const SmartNotifications = ({ playerData, onDismiss }) => {
     return streak;
   };
 
-  const analyzeMapTypePerformance = (data) => {
-    const typeStats = {};
-    
-    data.forEach(item => {
-      if (item.mapType && item.percentile) {
-        if (!typeStats[item.mapType]) {
-          typeStats[item.mapType] = { sum: 0, count: 0 };
-        }
-        typeStats[item.mapType].sum += item.percentile;
-        typeStats[item.mapType].count += 1;
-      }
-    });
-
-    let bestType = null, worstType = null;
-    let bestAvg = 100, worstAvg = 0;
-
-    Object.entries(typeStats).forEach(([type, stats]) => {
-      if (stats.count >= 3) {
-        const avg = stats.sum / stats.count;
-        if (avg < bestAvg) {
-          bestAvg = avg;
-          bestType = type;
-        }
-        if (avg > worstAvg) {
-          worstAvg = avg;
-          worstType = type;
-        }
-      }
-    });
-
-    return { bestType, worstType, bestAvg, worstAvg };
-  };
 
   const calculatePerformanceVariance = (data) => {
     const percentiles = data.map(item => item.percentile || 50);
@@ -197,13 +156,13 @@ const SmartNotifications = ({ playerData, onDismiss }) => {
         <div className="flex items-center justify-between">
           <div className="flex items-center">
             <span className="text-lg mr-2">🔔</span>
-            <h3 className="font-semibold text-gray-800">Smart Insights</h3>
+            <h3 className="font-semibold text-gray-800">{t('smartInsights')}</h3>
           </div>
           <button
             onClick={dismissAll}
             className="text-gray-400 hover:text-gray-600 text-sm"
           >
-            Alle schließen
+            {t('dismissAll')}
           </button>
         </div>
       </div>

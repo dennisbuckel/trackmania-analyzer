@@ -1,10 +1,14 @@
 // src/components/DataImport.js
 import React, { useState } from 'react';
+import { getTranslation } from '../i18n/translations';
 
 const DataImport = ({ pasteAreaContent, setPasteAreaContent, onDataParsed }) => {
   const [loading, setLoading] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const [extractionType, setExtractionType] = useState('auto');
+  
+  // Language is now fixed to English
+  const t = (key, params = {}) => getTranslation(key, 'en', params);
 
   const handleProcessData = () => {
     if (!pasteAreaContent) {
@@ -102,13 +106,7 @@ SKY DUST 11 4th / 52 644th / 2072 (top 31.08%) 682nd / 2072 (top 32.92%)`;
           value={pasteAreaContent}
           onChange={(e) => setPasteAreaContent(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="Paste your Trackmania COTD data here... 
-          
-Example:
-COTD 2025-03-04 #1
-5 hours ago
-**Want to sleep until June**
-714th / 50398th / 2281 (top 17.45%)418th / 2281 (top 18.33%)"
+          placeholder={t('pasteDataHere')}
           spellCheck="false"
         />
         {pasteAreaContent && (
@@ -136,10 +134,10 @@ COTD 2025-03-04 #1
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
-              Processing...
+              {t('processing')}
             </span>
           ) : (
-            'Process Data'
+            t('processData')
           )}
         </button>
         
@@ -155,7 +153,7 @@ COTD 2025-03-04 #1
             htmlFor="fileUpload"
             className="bg-gray-200 py-2 px-4 rounded cursor-pointer hover:bg-gray-300"
           >
-            Import File
+            {t('importFile')}
           </label>
         </div>
         
@@ -163,13 +161,13 @@ COTD 2025-03-04 #1
           onClick={loadSampleData}
           className="bg-green-100 text-green-700 py-2 px-4 rounded hover:bg-green-200"
         >
-          Load Sample Data
+          {t('loadSampleData')}
         </button>
 
         <div className="text-sm text-gray-500 ml-auto">
           {pasteAreaContent ? 
-            `${pasteAreaContent.length} characters | ${pasteAreaContent.split('\n').length} lines` : 
-            'Paste your data or import a file'
+            `${pasteAreaContent.length} ${t('characters')} | ${pasteAreaContent.split('\n').length} ${t('lines')}` : 
+            t('pasteDataHere')
           }
         </div>
       </div>

@@ -1,12 +1,12 @@
 // src/components/AdvancedSearch.js
 import React, { useState, useEffect } from 'react';
+import { getTranslation } from '../i18n/translations';
 
 const AdvancedSearch = ({ playerData, onFilter, isVisible, onClose }) => {
   const [filters, setFilters] = useState({
     dateRange: { start: '', end: '' },
     division: { min: '', max: '' },
     percentile: { min: '', max: '' },
-    mapType: '',
     mapName: '',
     points: { min: '', max: '' },
     streak: { type: 'any', length: '' }
@@ -14,6 +14,9 @@ const AdvancedSearch = ({ playerData, onFilter, isVisible, onClose }) => {
 
   const [savedFilters, setSavedFilters] = useState([]);
   const [filterName, setFilterName] = useState('');
+  
+  // Language is now fixed to English
+  const t = (key, params = {}) => getTranslation(key, 'en', params);
 
   useEffect(() => {
     // Load saved filters from localStorage
@@ -23,7 +26,6 @@ const AdvancedSearch = ({ playerData, onFilter, isVisible, onClose }) => {
     }
   }, []);
 
-  const mapTypes = ['Tech', 'Dirt', 'Fullspeed', 'Ice', 'Water', 'Plastic', 'Mixed', 'LOL', 'RPG', 'Other'];
 
   const handleFilterChange = (category, field, value) => {
     setFilters(prev => ({
@@ -61,10 +63,6 @@ const AdvancedSearch = ({ playerData, onFilter, isVisible, onClose }) => {
       filtered = filtered.filter(item => (item.percentile || 0) <= parseFloat(filters.percentile.max));
     }
 
-    // Map type filter
-    if (filters.mapType) {
-      filtered = filtered.filter(item => item.mapType === filters.mapType);
-    }
 
     // Map name filter
     if (filters.mapName) {
@@ -127,7 +125,6 @@ const AdvancedSearch = ({ playerData, onFilter, isVisible, onClose }) => {
       dateRange: { start: '', end: '' },
       division: { min: '', max: '' },
       percentile: { min: '', max: '' },
-      mapType: '',
       mapName: '',
       points: { min: '', max: '' },
       streak: { type: 'any', length: '' }
@@ -137,7 +134,7 @@ const AdvancedSearch = ({ playerData, onFilter, isVisible, onClose }) => {
 
   const saveFilter = () => {
     if (!filterName.trim()) {
-      alert('Bitte gib einen Namen für den Filter ein.');
+      alert(t('enterFilterName'));
       return;
     }
 
@@ -168,7 +165,6 @@ const AdvancedSearch = ({ playerData, onFilter, isVisible, onClose }) => {
     if (filters.dateRange.start || filters.dateRange.end) count++;
     if (filters.division.min || filters.division.max) count++;
     if (filters.percentile.min || filters.percentile.max) count++;
-    if (filters.mapType) count++;
     if (filters.mapName) count++;
     if (filters.points.min || filters.points.max) count++;
     if (filters.streak.type !== 'any') count++;
@@ -184,9 +180,9 @@ const AdvancedSearch = ({ playerData, onFilter, isVisible, onClose }) => {
         <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-2xl font-bold">Erweiterte Suche</h2>
+              <h2 className="text-2xl font-bold">{t('advancedSearchTitle')}</h2>
               <p className="text-blue-100 mt-1">
-                Filtere deine COTD-Daten nach verschiedenen Kriterien
+                {t('advancedSearchDesc')}
               </p>
             </div>
             <button 
@@ -205,10 +201,10 @@ const AdvancedSearch = ({ playerData, onFilter, isVisible, onClose }) => {
               
               {/* Date Range */}
               <div className="bg-gray-50 p-4 rounded-lg">
-                <h3 className="font-semibold mb-3 text-gray-800">📅 Zeitraum</h3>
+                <h3 className="font-semibold mb-3 text-gray-800">{t('dateRange')}</h3>
                 <div className="space-y-2">
                   <div>
-                    <label className="block text-sm text-gray-600 mb-1">Von</label>
+                    <label className="block text-sm text-gray-600 mb-1">{t('from')}</label>
                     <input
                       type="date"
                       value={filters.dateRange.start}
@@ -217,7 +213,7 @@ const AdvancedSearch = ({ playerData, onFilter, isVisible, onClose }) => {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm text-gray-600 mb-1">Bis</label>
+                    <label className="block text-sm text-gray-600 mb-1">{t('to')}</label>
                     <input
                       type="date"
                       value={filters.dateRange.end}
@@ -230,10 +226,10 @@ const AdvancedSearch = ({ playerData, onFilter, isVisible, onClose }) => {
 
               {/* Division */}
               <div className="bg-gray-50 p-4 rounded-lg">
-                <h3 className="font-semibold mb-3 text-gray-800">🏆 Division</h3>
+                <h3 className="font-semibold mb-3 text-gray-800">{t('division')}</h3>
                 <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <label className="block text-sm text-gray-600 mb-1">Min</label>
+                    <label className="block text-sm text-gray-600 mb-1">{t('min')}</label>
                     <input
                       type="number"
                       min="1"
@@ -245,7 +241,7 @@ const AdvancedSearch = ({ playerData, onFilter, isVisible, onClose }) => {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm text-gray-600 mb-1">Max</label>
+                    <label className="block text-sm text-gray-600 mb-1">{t('max')}</label>
                     <input
                       type="number"
                       min="1"
@@ -261,10 +257,10 @@ const AdvancedSearch = ({ playerData, onFilter, isVisible, onClose }) => {
 
               {/* Percentile */}
               <div className="bg-gray-50 p-4 rounded-lg">
-                <h3 className="font-semibold mb-3 text-gray-800">📊 Top Prozent</h3>
+                <h3 className="font-semibold mb-3 text-gray-800">{t('topPercent')}</h3>
                 <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <label className="block text-sm text-gray-600 mb-1">Min %</label>
+                    <label className="block text-sm text-gray-600 mb-1">{t('min')} %</label>
                     <input
                       type="number"
                       min="0"
@@ -277,7 +273,7 @@ const AdvancedSearch = ({ playerData, onFilter, isVisible, onClose }) => {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm text-gray-600 mb-1">Max %</label>
+                    <label className="block text-sm text-gray-600 mb-1">{t('max')} %</label>
                     <input
                       type="number"
                       min="0"
@@ -292,39 +288,25 @@ const AdvancedSearch = ({ playerData, onFilter, isVisible, onClose }) => {
                 </div>
               </div>
 
-              {/* Map Type */}
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <h3 className="font-semibold mb-3 text-gray-800">🗺️ Map-Typ</h3>
-                <select
-                  value={filters.mapType}
-                  onChange={(e) => handleFilterChange('mapType', null, e.target.value)}
-                  className="w-full border rounded px-3 py-2"
-                >
-                  <option value="">Alle Typen</option>
-                  {mapTypes.map(type => (
-                    <option key={type} value={type}>{type}</option>
-                  ))}
-                </select>
-              </div>
 
               {/* Map Name */}
               <div className="bg-gray-50 p-4 rounded-lg">
-                <h3 className="font-semibold mb-3 text-gray-800">🏁 Map-Name</h3>
+                <h3 className="font-semibold mb-3 text-gray-800">{t('mapName')}</h3>
                 <input
                   type="text"
                   value={filters.mapName}
                   onChange={(e) => handleFilterChange('mapName', null, e.target.value)}
                   className="w-full border rounded px-3 py-2"
-                  placeholder="Map-Name suchen..."
+                  placeholder={t('searchMapName')}
                 />
               </div>
 
               {/* Points */}
               <div className="bg-gray-50 p-4 rounded-lg">
-                <h3 className="font-semibold mb-3 text-gray-800">⭐ Punkte</h3>
+                <h3 className="font-semibold mb-3 text-gray-800">{t('points')}</h3>
                 <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <label className="block text-sm text-gray-600 mb-1">Min</label>
+                    <label className="block text-sm text-gray-600 mb-1">{t('min')}</label>
                     <input
                       type="number"
                       min="0"
@@ -335,7 +317,7 @@ const AdvancedSearch = ({ playerData, onFilter, isVisible, onClose }) => {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm text-gray-600 mb-1">Max</label>
+                    <label className="block text-sm text-gray-600 mb-1">{t('max')}</label>
                     <input
                       type="number"
                       min="0"
@@ -350,23 +332,23 @@ const AdvancedSearch = ({ playerData, onFilter, isVisible, onClose }) => {
 
               {/* Streak Filter */}
               <div className="bg-gray-50 p-4 rounded-lg md:col-span-2">
-                <h3 className="font-semibold mb-3 text-gray-800">🔥 Serien-Filter</h3>
+                <h3 className="font-semibold mb-3 text-gray-800">{t('streakFilter')}</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm text-gray-600 mb-1">Serie-Typ</label>
+                    <label className="block text-sm text-gray-600 mb-1">{t('streakType')}</label>
                     <select
                       value={filters.streak.type}
                       onChange={(e) => handleFilterChange('streak', 'type', e.target.value)}
                       className="w-full border rounded px-3 py-2"
                     >
-                      <option value="any">Keine Serie</option>
-                      <option value="division1">Division 1 Serie</option>
-                      <option value="top10">Top 10% Serie</option>
-                      <option value="top20">Top 20% Serie</option>
+                      <option value="any">{t('noStreak')}</option>
+                      <option value="division1">{t('div1Streak')}</option>
+                      <option value="top10">{t('top10Streak')}</option>
+                      <option value="top20">{t('top20Streak')}</option>
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm text-gray-600 mb-1">Mindestlänge</label>
+                    <label className="block text-sm text-gray-600 mb-1">{t('minLength')}</label>
                     <input
                       type="number"
                       min="2"
@@ -384,7 +366,7 @@ const AdvancedSearch = ({ playerData, onFilter, isVisible, onClose }) => {
 
           {/* Saved Filters Sidebar */}
           <div className="w-80 bg-gray-50 p-4 border-l overflow-y-auto">
-            <h3 className="font-semibold mb-4 text-gray-800">💾 Gespeicherte Filter</h3>
+            <h3 className="font-semibold mb-4 text-gray-800">{t('savedFilters')}</h3>
             
             {/* Save Current Filter */}
             <div className="mb-4 p-3 bg-white rounded border">
@@ -392,14 +374,14 @@ const AdvancedSearch = ({ playerData, onFilter, isVisible, onClose }) => {
                 type="text"
                 value={filterName}
                 onChange={(e) => setFilterName(e.target.value)}
-                placeholder="Filter-Name..."
+                placeholder={t('filterName')}
                 className="w-full border rounded px-2 py-1 mb-2 text-sm"
               />
               <button
                 onClick={saveFilter}
                 className="w-full bg-blue-600 text-white py-1 px-2 rounded text-sm hover:bg-blue-700"
               >
-                Aktuellen Filter speichern
+                {t('saveCurrentFilter')}
               </button>
             </div>
 
@@ -420,14 +402,14 @@ const AdvancedSearch = ({ playerData, onFilter, isVisible, onClose }) => {
                     onClick={() => loadFilter(filter)}
                     className="w-full bg-gray-100 hover:bg-gray-200 py-1 px-2 rounded text-xs"
                   >
-                    Laden
+                    {t('load')}
                   </button>
                 </div>
               ))}
               
               {savedFilters.length === 0 && (
                 <p className="text-gray-500 text-sm text-center py-4">
-                  Keine gespeicherten Filter
+                  {t('noSavedFilters')}
                 </p>
               )}
             </div>
@@ -439,7 +421,7 @@ const AdvancedSearch = ({ playerData, onFilter, isVisible, onClose }) => {
           <div className="text-sm text-gray-600">
             {getActiveFiltersCount() > 0 && (
               <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded">
-                {getActiveFiltersCount()} aktive Filter
+                {getActiveFiltersCount()} {t('activeFilters')}
               </span>
             )}
           </div>
@@ -449,13 +431,13 @@ const AdvancedSearch = ({ playerData, onFilter, isVisible, onClose }) => {
               onClick={clearFilters}
               className="px-4 py-2 text-gray-600 hover:text-gray-800"
             >
-              Zurücksetzen
+              {t('reset')}
             </button>
             <button
               onClick={applyFilters}
               className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
             >
-              Filter anwenden
+              {t('applyFilters')}
             </button>
           </div>
         </div>

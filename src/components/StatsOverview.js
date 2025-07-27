@@ -1,7 +1,10 @@
 // src/components/StatsOverview.js
 import React, { useMemo } from 'react';
+import { getTranslation } from '../i18n/translations';
 
 const StatsOverview = ({ playerData, timeRange }) => {
+  // Language is now fixed to English
+  const t = (key, params = {}) => getTranslation(key, 'en', params);
   const stats = useMemo(() => {
     if (!playerData || playerData.length === 0) return null;
     
@@ -21,43 +24,12 @@ const StatsOverview = ({ playerData, timeRange }) => {
     const divisionData = filteredData.filter((item) => item.division);
     const rankData = filteredData.filter((item) => item.overallRank && item.totalPlayers);
     const qualificationData = filteredData.filter((item) => item.qualificationRank && item.qualificationTotal);
-    const pointsData = filteredData.filter((item) => item.points);
     
     const divisionCounts = {};
     divisionData.forEach(item => {
       divisionCounts[item.division] = (divisionCounts[item.division] || 0) + 1;
     });
     
-    // Best/Worst map type (vereinfacht dargestellt)
-    const mapTypeCounts = {};
-    let bestMapType = { type: null, percentile: 100 };
-    let worstMapType = { type: null, percentile: 0 };
-    
-    filteredData.forEach(item => {
-      if (item.mapType) {
-        mapTypeCounts[item.mapType] = (mapTypeCounts[item.mapType] || 0) + 1;
-        if (item.percentile) {
-          if (!bestMapType[item.mapType]) {
-            bestMapType[item.mapType] = { sum: 0, count: 0, avg: 0 };
-            worstMapType[item.mapType] = { sum: 0, count: 0, avg: 0 };
-          }
-          bestMapType[item.mapType].sum += item.percentile;
-          bestMapType[item.mapType].count += 1;
-          bestMapType[item.mapType].avg = bestMapType[item.mapType].sum / bestMapType[item.mapType].count;
-          worstMapType[item.mapType].sum += item.percentile;
-          worstMapType[item.mapType].count += 1;
-          worstMapType[item.mapType].avg = worstMapType[item.mapType].sum / worstMapType[item.mapType].count;
-          if (bestMapType[item.mapType].count >= 3 && bestMapType[item.mapType].avg < bestMapType.percentile) {
-            bestMapType.type = item.mapType;
-            bestMapType.percentile = bestMapType[item.mapType].avg;
-          }
-          if (worstMapType[item.mapType].count >= 3 && worstMapType[item.mapType].avg > worstMapType.percentile) {
-            worstMapType.type = item.mapType;
-            worstMapType.percentile = worstMapType[item.mapType].avg;
-          }
-        }
-      }
-    });
     
     // Improvement calculation
     let improvement = { found: false, value: 0, period: '' };
@@ -69,8 +41,8 @@ const StatsOverview = ({ playerData, timeRange }) => {
       if (Math.abs(secondHalfAvgPercentile - firstHalfAvgPercentile) > 2) {
         improvement.found = true;
         improvement.value = firstHalfAvgPercentile - secondHalfAvgPercentile;
-        improvement.period = timeRange === 'all' ? 'seit Beginn' : 
-                             timeRange === '3months' ? 'in 3 Monaten' : 'im letzten Monat';
+        improvement.period = timeRange === 'all' ? 'overall' : 
+                             timeRange === '3months' ? 'in 3 months' : 'this month';
       }
     }
     
@@ -113,12 +85,6 @@ const StatsOverview = ({ playerData, timeRange }) => {
         div3: divisionCounts[3] || 0,
         total: (divisionCounts[1] || 0) + (divisionCounts[2] || 0) + (divisionCounts[3] || 0)
       },
-      totalPoints: pointsData.reduce((sum, item) => sum + item.points, 0),
-      avgPoints: pointsData.length 
-        ? Math.round(pointsData.reduce((sum, item) => sum + item.points, 0) / pointsData.length) 
-        : 0,
-      bestMapType: bestMapType.type,
-      worstMapType: worstMapType.type,
       improvement,
       bestStreak
     };
@@ -132,105 +98,118 @@ const StatsOverview = ({ playerData, timeRange }) => {
     <div className="mb-8">
       {/* Main Stats Grid */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-3 mb-4">
-        <div className="bg-white p-3 rounded shadow">
-          <p className="text-sm text-gray-500">Anzahl Rennen</p>
-          <p className="text-xl font-bold">{stats.totalRaces}</p>
+        <div className="card p-3">
+          <p className="text-sm" style={{ color: 'var(--color-textSecondary)' }}>{t('totalRaces')}</p>
+          <p className="text-xl font-bold" style={{ color: 'var(--color-textPrimary)' }}>{stats.totalRaces}</p>
         </div>
-        <div className="bg-white p-3 rounded shadow">
-          <p className="text-sm text-gray-500">Ø Division</p>
-          <p className="text-xl font-bold">{stats.avgDivision}</p>
+        <div className="card p-3">
+          <p className="text-sm" style={{ color: 'var(--color-textSecondary)' }}>{t('avgDivision')}</p>
+          <p className="text-xl font-bold" style={{ color: 'var(--color-textPrimary)' }}>{stats.avgDivision}</p>
         </div>
-        <div className="bg-white p-3 rounded shadow">
-          <p className="text-sm text-gray-500">Beste Division</p>
-          <p className="text-xl font-bold">{stats.bestDivision}</p>
+        <div className="card p-3">
+          <p className="text-sm" style={{ color: 'var(--color-textSecondary)' }}>{t('bestDivision')}</p>
+          <p className="text-xl font-bold" style={{ color: 'var(--color-textPrimary)' }}>{stats.bestDivision}</p>
         </div>
-        <div className="bg-white p-3 rounded shadow">
-          <p className="text-sm text-gray-500">Ø Top %</p>
-          <p className="text-xl font-bold">{stats.avgPercentile}%</p>
+        <div className="card p-3">
+          <p className="text-sm" style={{ color: 'var(--color-textSecondary)' }}>{t('avgPercentile')}</p>
+          <p className="text-xl font-bold" style={{ color: 'var(--color-textPrimary)' }}>{stats.avgPercentile}%</p>
         </div>
-        <div className="bg-white p-3 rounded shadow">
-          <p className="text-sm text-gray-500">Beste Platzierung</p>
-          <p className="text-xl font-bold">#{stats.bestRank}</p>
+        <div className="card p-3">
+          <p className="text-sm" style={{ color: 'var(--color-textSecondary)' }}>{t('bestRank')}</p>
+          <p className="text-xl font-bold" style={{ color: 'var(--color-textPrimary)' }}>#{stats.bestRank}</p>
         </div>
-        <div className="bg-white p-3 rounded shadow">
-          <p className="text-sm text-gray-500">Beste Quali</p>
-          <p className="text-xl font-bold">#{stats.bestQualification}</p>
+        <div className="card p-3">
+          <p className="text-sm" style={{ color: 'var(--color-textSecondary)' }}>{t('bestQualification')}</p>
+          <p className="text-xl font-bold" style={{ color: 'var(--color-textPrimary)' }}>#{stats.bestQualification}</p>
         </div>
-        <div className="bg-white p-3 rounded shadow">
-          <p className="text-sm text-gray-500">Ø Quali Top %</p>
-          <p className="text-xl font-bold">{stats.avgQualification}%</p>
+        <div className="card p-3">
+          <p className="text-sm" style={{ color: 'var(--color-textSecondary)' }}>{t('avgQualification')}</p>
+          <p className="text-xl font-bold" style={{ color: 'var(--color-textPrimary)' }}>{stats.avgQualification}%</p>
         </div>
       </div>
       
       {/* Detailed Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Division Breakdown */}
-        <div className="bg-white p-4 rounded shadow">
-          <h3 className="text-md font-bold mb-2">Divisionen-Verteilung</h3>
+        <div className="card p-4">
+          <h3 className="text-md font-bold mb-2" style={{ color: 'var(--color-textPrimary)' }}>Division Distribution</h3>
           <div className="flex items-center mt-2">
-            <div className="flex-1 bg-gray-200 rounded-full h-6 overflow-hidden">
+            <div className="flex-1 rounded-full h-6 overflow-hidden" style={{ backgroundColor: 'var(--color-backgroundSecondary)' }}>
               {stats.topDivisionCount.div1 > 0 && (
                 <div 
-                  className="bg-green-500 h-6" 
-                  style={{ width: `${(stats.topDivisionCount.div1 / stats.totalRaces) * 100}%`, float: 'left' }} 
+                  className="h-6" 
+                  style={{ 
+                    width: `${(stats.topDivisionCount.div1 / stats.totalRaces) * 100}%`, 
+                    float: 'left',
+                    backgroundColor: 'var(--color-success)'
+                  }} 
                 />
               )}
               {stats.topDivisionCount.div2 > 0 && (
                 <div 
-                  className="bg-blue-500 h-6" 
-                  style={{ width: `${(stats.topDivisionCount.div2 / stats.totalRaces) * 100}%`, float: 'left' }} 
+                  className="h-6" 
+                  style={{ 
+                    width: `${(stats.topDivisionCount.div2 / stats.totalRaces) * 100}%`, 
+                    float: 'left',
+                    backgroundColor: 'var(--color-primary)'
+                  }} 
                 />
               )}
               {stats.topDivisionCount.div3 > 0 && (
                 <div 
-                  className="bg-purple-500 h-6" 
-                  style={{ width: `${(stats.topDivisionCount.div3 / stats.totalRaces) * 100}%`, float: 'left' }} 
+                  className="h-6" 
+                  style={{ 
+                    width: `${(stats.topDivisionCount.div3 / stats.totalRaces) * 100}%`, 
+                    float: 'left',
+                    backgroundColor: 'var(--color-accent)'
+                  }} 
                 />
               )}
             </div>
           </div>
-          <div className="flex mt-2 text-sm">
+          <div className="flex mt-2 text-sm" style={{ color: 'var(--color-textSecondary)' }}>
             <div className="flex items-center mr-4">
-              <div className="w-3 h-3 bg-green-500 mr-1 rounded-sm"></div>
+              <div className="w-3 h-3 mr-1 rounded-sm" style={{ backgroundColor: 'var(--color-success)' }}></div>
               <span>Div 1: {stats.topDivisionCount.div1}</span>
             </div>
             <div className="flex items-center mr-4">
-              <div className="w-3 h-3 bg-blue-500 mr-1 rounded-sm"></div>
+              <div className="w-3 h-3 mr-1 rounded-sm" style={{ backgroundColor: 'var(--color-primary)' }}></div>
               <span>Div 2: {stats.topDivisionCount.div2}</span>
             </div>
             <div className="flex items-center mr-4">
-              <div className="w-3 h-3 bg-purple-500 mr-1 rounded-sm"></div>
+              <div className="w-3 h-3 mr-1 rounded-sm" style={{ backgroundColor: 'var(--color-accent)' }}></div>
               <span>Div 3: {stats.topDivisionCount.div3}</span>
             </div>
           </div>
         </div>
         
         {/* Performance Highlights */}
-        <div className="bg-white p-4 rounded shadow">
-          <h3 className="text-md font-bold mb-2">Performance Highlights</h3>
-          <div className="flex flex-col space-y-1 text-sm">
+        <div className="card p-4">
+          <h3 className="text-md font-bold mb-2" style={{ color: 'var(--color-textPrimary)' }}>Performance Highlights</h3>
+          <div className="flex flex-col space-y-1 text-sm" style={{ color: 'var(--color-textSecondary)' }}>
             <div className="flex justify-between">
-              <span>Top-Divisionen:</span>
-              <span className="font-medium">{stats.topDivisionCount.total} von {stats.totalRaces}</span>
-            </div>
-            <div className="flex justify-between">
-              <span>Punkte Gesamt:</span>
-              <span className="font-medium">{stats.totalPoints}</span>
-            </div>
-            <div className="flex justify-between">
-              <span>Punkte pro Rennen:</span>
-              <span className="font-medium">{stats.avgPoints}</span>
+              <span>Top Divisions:</span>
+              <span className="font-medium" style={{ color: 'var(--color-textPrimary)' }}>{stats.topDivisionCount.total} of {stats.totalRaces}</span>
             </div>
             {stats.improvement.found && (
-              <div className="flex justify-between text-green-600">
-                <span>Verbesserung {stats.improvement.period}:</span>
+              <div className="flex justify-between" style={{ color: 'var(--color-success)' }}>
+                <span className="flex items-center">
+                  Improvement {stats.improvement.period}:
+                  <span 
+                    className="ml-1 text-xs cursor-help" 
+                    title="Calculated by comparing average Top % of first half vs second half of races (requires 8+ races, >2% difference)"
+                    style={{ color: 'var(--color-textSecondary)' }}
+                  >
+                    ℹ️
+                  </span>
+                </span>
                 <span className="font-medium">{stats.improvement.value > 0 ? '↑' : '↓'} {Math.abs(stats.improvement.value).toFixed(1)}%</span>
               </div>
             )}
             {stats.bestStreak > 1 && (
               <div className="flex justify-between">
-                <span>Beste Top-Division Serie:</span>
-                <span className="font-medium">{stats.bestStreak} Rennen</span>
+                <span>Best Top Division Streak:</span>
+                <span className="font-medium" style={{ color: 'var(--color-textPrimary)' }}>{stats.bestStreak} races</span>
               </div>
             )}
           </div>

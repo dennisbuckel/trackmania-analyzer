@@ -1,25 +1,29 @@
 // src/components/KeyboardShortcuts.js
 import React, { useState, useEffect } from 'react';
+import { getTranslation } from '../i18n/translations';
 
 const KeyboardShortcuts = ({ onAction }) => {
   const [showHelp, setShowHelp] = useState(false);
   const [pressedKeys, setPressedKeys] = useState(new Set());
+  
+  // Language is now fixed to English
+  const t = (key, params = {}) => getTranslation(key, 'en', params);
 
   const shortcuts = [
-    { keys: ['Ctrl', 'K'], action: 'search', description: 'Erweiterte Suche öffnen' },
-    { keys: ['Ctrl', 'N'], action: 'add-data', description: 'Neue Daten hinzufügen' },
-    { keys: ['Ctrl', 'E'], action: 'export', description: 'Daten exportieren' },
-    { keys: ['Ctrl', 'D'], action: 'delete', description: 'Alle Daten löschen' },
-    { keys: ['Ctrl', '1'], action: 'view-performance', description: 'Performance-Ansicht' },
-    { keys: ['Ctrl', '2'], action: 'view-division', description: 'Division-Ansicht' },
-    { keys: ['Ctrl', '3'], action: 'view-progress', description: 'Verlaufs-Ansicht' },
-    { keys: ['Ctrl', '4'], action: 'view-points', description: 'Punkte-Ansicht' },
-    { keys: ['Ctrl', '5'], action: 'view-rank', description: 'Rang-Ansicht' },
-    { keys: ['?'], action: 'help', description: 'Tastenkürzel anzeigen' },
-    { keys: ['Escape'], action: 'close', description: 'Dialoge schließen' },
-    { keys: ['Ctrl', 'F'], action: 'focus-search', description: 'Suchfeld fokussieren' },
-    { keys: ['Ctrl', 'R'], action: 'refresh', description: 'Daten neu laden' },
-    { keys: ['Ctrl', 'S'], action: 'save', description: 'Aktuellen Filter speichern' }
+    { keys: ['Ctrl', 'K'], action: 'search', description: t('shortcuts.openSearch') },
+    { keys: ['Ctrl', 'N'], action: 'add-data', description: t('shortcuts.addNewData') },
+    { keys: ['Ctrl', 'E'], action: 'export', description: t('shortcuts.exportData') },
+    { keys: ['Ctrl', 'D'], action: 'delete', description: t('shortcuts.deleteAllData') },
+    { keys: ['Ctrl', '1'], action: 'view-performance', description: t('shortcuts.performanceView') },
+    { keys: ['Ctrl', '2'], action: 'view-division', description: t('shortcuts.divisionView') },
+    { keys: ['Ctrl', '3'], action: 'view-progress', description: t('shortcuts.progressView') },
+    { keys: ['Ctrl', '4'], action: 'view-points', description: t('shortcuts.pointsView') },
+    { keys: ['Ctrl', '5'], action: 'view-rank', description: t('shortcuts.rankView') },
+    { keys: ['?'], action: 'help', description: t('shortcuts.showShortcuts') },
+    { keys: ['Escape'], action: 'close', description: t('shortcuts.closeDialogs') },
+    { keys: ['Ctrl', 'F'], action: 'focus-search', description: t('shortcuts.focusSearch') },
+    { keys: ['Ctrl', 'R'], action: 'refresh', description: t('shortcuts.refreshData') },
+    { keys: ['Ctrl', 'S'], action: 'save', description: t('shortcuts.saveFilter') }
   ];
 
   useEffect(() => {
@@ -143,9 +147,9 @@ const KeyboardShortcuts = ({ onAction }) => {
   };
 
   const groupedShortcuts = {
-    'Navigation': shortcuts.filter(s => ['view-performance', 'view-division', 'view-progress', 'view-points', 'view-rank'].includes(s.action)),
-    'Aktionen': shortcuts.filter(s => ['search', 'add-data', 'export', 'delete', 'refresh', 'save'].includes(s.action)),
-    'Allgemein': shortcuts.filter(s => ['help', 'close', 'focus-search'].includes(s.action))
+    [t('navigation')]: shortcuts.filter(s => ['view-performance', 'view-division', 'view-progress', 'view-points', 'view-rank'].includes(s.action)),
+    [t('actions')]: shortcuts.filter(s => ['search', 'add-data', 'export', 'delete', 'refresh', 'save'].includes(s.action)),
+    [t('general')]: shortcuts.filter(s => ['help', 'close', 'focus-search'].includes(s.action))
   };
 
   return (
@@ -155,7 +159,7 @@ const KeyboardShortcuts = ({ onAction }) => {
         <button
           onClick={() => setShowHelp(!showHelp)}
           className="bg-gray-800 text-white p-2 rounded-full shadow-lg hover:bg-gray-700 transition-colors group"
-          title="Tastenkürzel anzeigen (?)"
+          title={`${t('keyboardShortcuts')} (?)`}
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -163,7 +167,7 @@ const KeyboardShortcuts = ({ onAction }) => {
           
           {/* Tooltip */}
           <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-            Tastenkürzel (?)
+            {t('keyboardShortcuts')} (?)
           </div>
         </button>
       </div>
@@ -176,8 +180,8 @@ const KeyboardShortcuts = ({ onAction }) => {
             <div className="bg-gradient-to-r from-gray-800 to-gray-900 text-white p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <h2 className="text-2xl font-bold">⌨️ Tastenkürzel</h2>
-                  <p className="text-gray-300 mt-1">Arbeite effizienter mit Keyboard-Shortcuts</p>
+                  <h2 className="text-2xl font-bold">{t('keyboardShortcuts')}</h2>
+                  <p className="text-gray-300 mt-1">{t('keyboardShortcutsDesc')}</p>
                 </div>
                 <button 
                   onClick={() => setShowHelp(false)}
@@ -219,12 +223,11 @@ const KeyboardShortcuts = ({ onAction }) => {
 
               {/* Tips */}
               <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                <h4 className="font-semibold text-blue-800 mb-2">💡 Tipps</h4>
+                <h4 className="font-semibold text-blue-800 mb-2">{t('tips')}</h4>
                 <ul className="text-sm text-blue-700 space-y-1">
-                  <li>• Tastenkürzel funktionieren nur, wenn kein Eingabefeld aktiv ist</li>
-                  <li>• Drücke <kbd className="px-1 bg-white border rounded text-xs">?</kbd> jederzeit um diese Hilfe zu öffnen</li>
-                  <li>• <kbd className="px-1 bg-white border rounded text-xs">Esc</kbd> schließt alle offenen Dialoge</li>
-                  <li>• Verwende <kbd className="px-1 bg-white border rounded text-xs">Ctrl + F</kbd> um schnell zu suchen</li>
+                  {t('shortcutTips').map((tip, index) => (
+                    <li key={index}>• {tip}</li>
+                  ))}
                 </ul>
               </div>
             </div>
@@ -232,13 +235,13 @@ const KeyboardShortcuts = ({ onAction }) => {
             {/* Footer */}
             <div className="bg-gray-50 p-4 flex justify-between items-center">
               <div className="text-sm text-gray-500">
-                {shortcuts.length} Tastenkürzel verfügbar
+                {shortcuts.length} {t('shortcutsAvailable')}
               </div>
               <button
                 onClick={() => setShowHelp(false)}
                 className="btn-primary"
               >
-                Verstanden
+                {t('understood')}
               </button>
             </div>
           </div>

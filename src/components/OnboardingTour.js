@@ -1,44 +1,48 @@
 // src/components/OnboardingTour.js
 import React, { useState, useEffect } from 'react';
+import { getTranslation } from '../i18n/translations';
 
 const OnboardingTour = ({ isVisible, onComplete }) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
+  
+  // Language is now fixed to English
+  const t = (key, params = {}) => getTranslation(key, 'en', params);
 
   const steps = [
     {
-      title: "Willkommen zum COTD Analyzer! 🏁",
-      content: "Analysiere deine Trackmania Cup of the Day Performance wie ein Profi. Lass uns eine kurze Tour machen!",
+      title: t('tour.welcome'),
+      content: t('tour.welcomeDesc'),
       target: null,
       position: "center"
     },
     {
-      title: "Daten importieren 📊",
-      content: "Kopiere deine COTD-Ergebnisse aus Trackmania oder trackmania.io und füge sie hier ein. Der Parser erkennt das Format automatisch!",
+      title: t('tour.dataImport'),
+      content: t('tour.dataImportDesc'),
       target: ".data-import-area",
       position: "bottom"
     },
     {
-      title: "Live-Statistiken 📈",
-      content: "Hier siehst du sofort deine wichtigsten Kennzahlen: Durchschnittsdivision, beste Platzierungen und Verbesserungstrends.",
+      title: t('tour.liveStats'),
+      content: t('tour.liveStatsDesc'),
       target: ".stats-overview",
       position: "bottom"
     },
     {
-      title: "Interaktive Charts 📊",
-      content: "Visualisiere deine Performance mit verschiedenen Chart-Typen. Zoome, filtere und entdecke Trends in deinen Daten!",
+      title: t('tour.interactiveCharts'),
+      content: t('tour.interactiveChartsDesc'),
       target: ".charts-section",
       position: "top"
     },
     {
-      title: "Detaillierte Tabelle 📋",
-      content: "Durchsuche und sortiere alle deine Rennen. Jede Spalte ist sortierbar und die Tabelle ist vollständig durchsuchbar.",
+      title: t('tour.detailedTable'),
+      content: t('tour.detailedTableDesc'),
       target: ".results-table",
       position: "top"
     },
     {
-      title: "Du bist startklar! 🚀",
-      content: "Alle Features sind jetzt freigeschaltet. Viel Spaß beim Analysieren deiner COTD-Performance!",
+      title: t('tour.ready'),
+      content: t('tour.readyDesc'),
       target: null,
       position: "center"
     }
@@ -147,7 +151,7 @@ const OnboardingTour = ({ isVisible, onComplete }) => {
                     : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                 }`}
               >
-                Zurück
+                {t('tour.back')}
               </button>
 
               <div className="flex space-x-2">
@@ -155,13 +159,13 @@ const OnboardingTour = ({ isVisible, onComplete }) => {
                   onClick={skipTour}
                   className="px-4 py-2 text-gray-500 hover:text-gray-700 transition-colors"
                 >
-                  Überspringen
+                  {t('tour.skip')}
                 </button>
                 <button
                   onClick={nextStep}
                   className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
                 >
-                  {currentStep === steps.length - 1 ? 'Fertig!' : 'Weiter'}
+                  {currentStep === steps.length - 1 ? t('tour.finish') : t('tour.next')}
                 </button>
               </div>
             </div>

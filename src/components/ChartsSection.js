@@ -17,30 +17,11 @@ import {
   Label,
   LabelList
 } from 'recharts';
+import { useTheme } from './ThemeProvider';
 
 // Helper Functions
 const capitalize = (str) => str.charAt(0).toUpperCase() + str.slice(1);
 
-const calculateMovingAverage = (data, key, windowSize = 5, newKey = null) => {
-  if (!data || data.length < windowSize) return data;
-  
-  const result = [...data];
-  const keyToAssign = newKey || `movingAvg${capitalize(key)}`;
-  
-  for (let i = 0; i < result.length; i++) {
-    const halfWindow = Math.floor(windowSize / 2);
-    const start = Math.max(0, i - halfWindow);
-    const end = Math.min(result.length, i + halfWindow + 1);
-    const windowData = result.slice(start, end);
-    
-    if (windowData.length >= 3) { 
-      const sum = windowData.reduce((acc, item) => acc + (item[key] || 0), 0);
-      result[i][keyToAssign] = sum / windowData.length;
-    }
-  }
-  
-  return result;
-};
 
 const calculateTrendline = (data, key, newKey = null) => {
   const n = data?.length || 0;
@@ -88,7 +69,11 @@ const CustomTooltip = React.memo(({ content, active, payload }) => {
   const data = payload[0].payload;
   
   return (
-    <div className="bg-white p-2 border rounded shadow">
+    <div className="p-2 rounded shadow" style={{
+      backgroundColor: 'var(--color-surface)',
+      border: `1px solid var(--color-border)`,
+      color: 'var(--color-textPrimary)'
+    }}>
       {content(data)}
     </div>
   );
@@ -117,27 +102,6 @@ const PerformanceTrendline = ({ data }) => {
   );
 };
 
-const PerformanceMovingAverage = ({ data }) => {
-  const dataWithMA = useMemo(() => {
-    return calculateMovingAverage(data, 'percentile', 5);
-  }, [data]);
-  
-  if (!dataWithMA) return null;
-  
-  return (
-    <Line 
-      type="monotone" 
-      data={dataWithMA}
-      dataKey="movingAvgPercentile" 
-      stroke="#8b5cf6" 
-      strokeWidth={2.5} 
-      name="5-Race Avg" 
-      dot={false} 
-      connectNulls={true}
-      isAnimationActive={false}
-    />
-  );
-};
 
 const DivisionRankTrendline = ({ data }) => {
   const trendlineData = useMemo(() => {
@@ -162,21 +126,47 @@ const DivisionRankTrendline = ({ data }) => {
   );
 };
 
+const TotalPlayersTrendline = ({ data }) => {
+  const trendlineData = useMemo(() => {
+    return calculateTrendline(data, 'totalPlayers', 'trendTotalPlayers');
+  }, [data]);
+  
+  if (!trendlineData || trendlineData.length === 0) return null;
+  
+  return (
+    <Line 
+      type="monotone" 
+      data={trendlineData}
+      dataKey="trendTotalPlayers" 
+      stroke="#10b981" 
+      strokeWidth={2} 
+      strokeDasharray="5 5"
+      name="Player Count Trend" 
+      dot={false} 
+      connectNulls={true}
+      isAnimationActive={false}
+    />
+  );
+};
+
 const ChartsSection = ({ playerData, activeView, timeRange, setTimeRange }) => {
+  // Get theme colors
+  const { getThemeColors } = useTheme();
+  const themeColors = getThemeColors();
+  
   // State
   const [customStartDate, setCustomStartDate] = useState('');
   const [customEndDate, setCustomEndDate] = useState('');
   const [detailLevel, setDetailLevel] = useState('standard');
-  const [showMovingAverage, setShowMovingAverage] = useState(false);
 
-  // Color constants
+  // Theme-aware color constants
   const DIVISION_COLORS = ['#10B981', '#3B82F6', '#8B5CF6', '#EC4899', '#F59E0B', '#6B7280'];
   const CHART_COLORS = {
-    primary: '#3b82f6',
-    secondary: '#ec4899',
-    movingAvg: '#8b5cf6',
-    trendline: '#10b981',
-    total: '#6366f1'
+    primary: themeColors.primary,
+    secondary: themeColors.accent,
+    movingAvg: themeColors.info,
+    trendline: themeColors.success,
+    total: themeColors.primary
   };
 
   // Filter data based on selected time range
@@ -247,6 +237,16 @@ const ChartsSection = ({ playerData, activeView, timeRange, setTimeRange }) => {
       divisionRank: item.divisionRank || 0,
       divisionPlayers: item.divisionPlayers || 0
     }));
+
+    const totalPlayersData = filteredData.map((item, index) => ({
+      date: formatDate(item.date),
+      fullDate: item.date,
+      totalPlayers: item.totalPlayers || 0,
+      map: item.map || '',
+      index: index,
+      overallRank: item.overallRank || 0,
+      percentile: item.percentile || null
+    }));
     
     const divisionCounts = {};
     filteredData.forEach(item => {
@@ -289,6 +289,7 @@ const ChartsSection = ({ playerData, activeView, timeRange, setTimeRange }) => {
       divisionDistribution,
       divisionProgressData,
       divisionRankData,
+      totalPlayersData,
     };
   }, [filteredData, formatDate]);
 
@@ -324,6 +325,15 @@ const ChartsSection = ({ playerData, activeView, timeRange, setTimeRange }) => {
         <p>Division: {data.division}</p>
         <p>Division Rank: {data.divisionRank}/{data.divisionPlayers}</p>
         <p>Position: {data.actualRank}</p>
+      </>
+    ),
+    totalPlayers: (data) => (
+      <>
+        <p className="font-semibold">{data.fullDate}</p>
+        <p>{data.map}</p>
+        <p>Total Players: {data.totalPlayers.toLocaleString()}</p>
+        <p>Your Rank: {data.overallRank}</p>
+        <p>Your Top %: {data.percentile !== null ? data.percentile.toFixed(2) + '%' : 'N/A'}</p>
       </>
     )
   }), []);
@@ -418,8 +428,8 @@ const ChartsSection = ({ playerData, activeView, timeRange, setTimeRange }) => {
   const renderChart = () => {
     if (!chartData || Object.keys(chartData).length === 0) {
       return (
-        <div className="flex items-center justify-center h-64 bg-gray-50 rounded">
-          <p className="text-gray-500">No data available for the selected time range</p>
+        <div className="flex items-center justify-center h-64 rounded" style={{ backgroundColor: 'var(--color-backgroundSecondary)' }}>
+          <p style={{ color: 'var(--color-textMuted)' }}>No data available for the selected time range</p>
         </div>
       );
     }
@@ -430,16 +440,21 @@ const ChartsSection = ({ playerData, activeView, timeRange, setTimeRange }) => {
           <div className="relative h-80">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={chartData.performance} margin={{ top: 10, right: 30, left: 10, bottom: 30 }}>
-                <CartesianGrid strokeDasharray="3 3" />
+                <CartesianGrid strokeDasharray="3 3" stroke={themeColors.border} />
                 <XAxis 
                   dataKey="date" 
-                  tick={{ fontSize: 12 }} 
-                  interval={getXAxisInterval(chartData.performance)} 
+                  tick={{ fontSize: 12, fill: themeColors.textSecondary }} 
+                  interval={getXAxisInterval(chartData.performance)}
+                  axisLine={{ stroke: themeColors.border }}
+                  tickLine={{ stroke: themeColors.border }}
                 />
                 <YAxis 
                   reversed
                   domain={[0, 100]} 
-                  label={{ value: 'Top %', angle: -90, position: 'insideLeft' }}
+                  label={{ value: 'Top %', angle: -90, position: 'insideLeft', style: { textAnchor: 'middle', fill: themeColors.textSecondary } }}
+                  tick={{ fontSize: 12, fill: themeColors.textSecondary }}
+                  axisLine={{ stroke: themeColors.border }}
+                  tickLine={{ stroke: themeColors.border }}
                 />
                 <Tooltip content={(props) => 
                   <CustomTooltip {...props} content={tooltipContent.performance} />
@@ -459,20 +474,10 @@ const ChartsSection = ({ playerData, activeView, timeRange, setTimeRange }) => {
                   isAnimationActive={false}
                 />
                 
-                {/* Conditionally render 5-day moving average */}
-                {showMovingAverage && (
-                  <PerformanceMovingAverage data={chartData.performance} />
-                )}
                 
                 {/* Trendline always visible */}
                 <PerformanceTrendline data={chartData.performance} />
                 
-                <ReferenceLine y={20} stroke="#10B981" strokeDasharray="3 3">
-                  <Label position="right" value="Div 1" fill="#10B981" fontSize={12} />
-                </ReferenceLine>
-                <ReferenceLine y={40} stroke="#3B82F6" strokeDasharray="3 3">
-                  <Label position="right" value="Div 2" fill="#3B82F6" fontSize={12} />
-                </ReferenceLine>
                 
                 <Brush 
                   dataKey="date" 
@@ -489,15 +494,20 @@ const ChartsSection = ({ playerData, activeView, timeRange, setTimeRange }) => {
         return (
           <div className="h-80">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={chartData.divisionDistribution} margin={{ top: 10, right: 30, left: 10, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" />
+              <BarChart data={chartData.divisionDistribution} margin={{ top: 30, right: 30, left: 10, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke={themeColors.border} />
                 <XAxis 
                   dataKey="division" 
-                  tick={{ fontSize: 12 }} 
-                  label={{ value: 'Division', position: 'insideBottom', offset: -5 }} 
+                  tick={{ fontSize: 12, fill: themeColors.textSecondary }} 
+                  label={{ value: 'Division', position: 'insideBottom', offset: -5, style: { textAnchor: 'middle', fill: themeColors.textSecondary } }} 
+                  axisLine={{ stroke: themeColors.border }}
+                  tickLine={{ stroke: themeColors.border }}
                 />
                 <YAxis 
-                  label={{ value: 'Races', angle: -90, position: 'insideLeft' }}
+                  label={{ value: 'Races', angle: -90, position: 'insideLeft', style: { textAnchor: 'middle', fill: themeColors.textSecondary } }}
+                  tick={{ fontSize: 12, fill: themeColors.textSecondary }}
+                  axisLine={{ stroke: themeColors.border }}
+                  tickLine={{ stroke: themeColors.border }}
                 />
                 <Tooltip content={(props) => 
                   <CustomTooltip {...props} content={tooltipContent.division} />
@@ -510,7 +520,7 @@ const ChartsSection = ({ playerData, activeView, timeRange, setTimeRange }) => {
                       fill={DIVISION_COLORS[Math.min(entry.division - 1, DIVISION_COLORS.length - 1)]} 
                     />
                   ))}
-                  <LabelList dataKey="count" position="top" fill="#333" />
+                  <LabelList dataKey="count" position="top" fill={themeColors.textPrimary} />
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
@@ -522,16 +532,21 @@ const ChartsSection = ({ playerData, activeView, timeRange, setTimeRange }) => {
           <div className="relative h-80">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={chartData.divisionProgressData} margin={{ top: 10, right: 30, left: 10, bottom: 30 }}>
-                <CartesianGrid strokeDasharray="3 3" />
+                <CartesianGrid strokeDasharray="3 3" stroke={themeColors.border} />
                 <XAxis 
                   dataKey="date" 
-                  tick={{ fontSize: 12 }} 
-                  interval={getXAxisInterval(chartData.divisionProgressData)} 
+                  tick={{ fontSize: 12, fill: themeColors.textSecondary }} 
+                  interval={getXAxisInterval(chartData.divisionProgressData)}
+                  axisLine={{ stroke: themeColors.border }}
+                  tickLine={{ stroke: themeColors.border }}
                 />
                 <YAxis 
                   domain={[0, 'dataMax + 2']} 
                   reversed 
-                  label={{ value: 'Division', angle: -90, position: 'insideLeft' }}
+                  label={{ value: 'Division', angle: -90, position: 'insideLeft', style: { textAnchor: 'middle', fill: themeColors.textSecondary } }}
+                  tick={{ fontSize: 12, fill: themeColors.textSecondary }}
+                  axisLine={{ stroke: themeColors.border }}
+                  tickLine={{ stroke: themeColors.border }}
                 />
                 <Tooltip content={(props) => 
                   <CustomTooltip {...props} content={tooltipContent.divisionProgress} />
@@ -550,13 +565,6 @@ const ChartsSection = ({ playerData, activeView, timeRange, setTimeRange }) => {
                   isAnimationActive={false}
                 />
                 
-                <ReferenceLine y={1} stroke="#10B981" strokeDasharray="3 3">
-                  <Label position="right" value="Div 1" fill="#10B981" fontSize={12} />
-                </ReferenceLine>
-                <ReferenceLine y={3} stroke="#3B82F6" strokeDasharray="3 3">
-                  <Label position="right" value="Div 3" fill="#3B82F6" fontSize={12} />
-                </ReferenceLine>
-                
                 <Brush 
                   dataKey="date" 
                   height={30} 
@@ -573,16 +581,21 @@ const ChartsSection = ({ playerData, activeView, timeRange, setTimeRange }) => {
           <div className="relative h-80">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={chartData.divisionRankData} margin={{ top: 10, right: 30, left: 10, bottom: 30 }}>
-                <CartesianGrid strokeDasharray="3 3" />
+                <CartesianGrid strokeDasharray="3 3" stroke={themeColors.border} />
                 <XAxis 
                   dataKey="date" 
-                  tick={{ fontSize: 12 }} 
-                  interval={getXAxisInterval(chartData.divisionRankData)} 
+                  tick={{ fontSize: 12, fill: themeColors.textSecondary }} 
+                  interval={getXAxisInterval(chartData.divisionRankData)}
+                  axisLine={{ stroke: themeColors.border }}
+                  tickLine={{ stroke: themeColors.border }}
                 />
                 <YAxis 
                   reversed
                   domain={['dataMax + 5', 1]}
-                  label={{ value: 'Position', angle: -90, position: 'insideLeft' }}
+                  label={{ value: 'Position', angle: -90, position: 'insideLeft', style: { textAnchor: 'middle', fill: themeColors.textSecondary } }}
+                  tick={{ fontSize: 12, fill: themeColors.textSecondary }}
+                  axisLine={{ stroke: themeColors.border }}
+                  tickLine={{ stroke: themeColors.border }}
                 />
                 <Tooltip content={(props) => 
                   <CustomTooltip {...props} content={tooltipContent.divisionRank} />
@@ -603,12 +616,66 @@ const ChartsSection = ({ playerData, activeView, timeRange, setTimeRange }) => {
                 
                 <DivisionRankTrendline data={chartData.divisionRankData} />
                 
-                <ReferenceLine y={3} stroke="#10B981" strokeDasharray="3 3">
-                  <Label position="right" value="Top 3" fill="#10B981" fontSize={12} />
-                </ReferenceLine>
-                <ReferenceLine y={10} stroke="#3B82F6" strokeDasharray="3 3">
-                  <Label position="right" value="Top 10" fill="#3B82F6" fontSize={12} />
-                </ReferenceLine>
+                <Brush 
+                  dataKey="date" 
+                  height={30} 
+                  stroke="#3b82f6"
+                  tickFormatter={() => ''}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        );
+
+      case 'totalPlayers':
+        return (
+          <div className="relative h-80">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={chartData.totalPlayersData} margin={{ top: 10, right: 30, left: 10, bottom: 30 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke={themeColors.border} />
+                <XAxis 
+                  dataKey="date" 
+                  tick={{ fontSize: 12, fill: themeColors.textSecondary }} 
+                  interval={getXAxisInterval(chartData.totalPlayersData)}
+                  axisLine={{ stroke: themeColors.border }}
+                  tickLine={{ stroke: themeColors.border }}
+                />
+                <YAxis 
+                  domain={['dataMin - 100', 'dataMax + 100']}
+                  label={{ value: 'Total Players', angle: -90, position: 'insideLeft', style: { textAnchor: 'middle', fill: themeColors.textSecondary } }}
+                  tick={{ fontSize: 12, fill: themeColors.textSecondary }}
+                  axisLine={{ stroke: themeColors.border }}
+                  tickLine={{ stroke: themeColors.border }}
+                  tickFormatter={(value) => value.toLocaleString()}
+                />
+                <Tooltip content={(props) => 
+                  <CustomTooltip {...props} content={tooltipContent.totalPlayers} />
+                } />
+                <Legend verticalAlign="top" height={36} />
+                
+                {/* Main total players line */}
+                <Line 
+                  type="monotone" 
+                  dataKey="totalPlayers" 
+                  stroke={CHART_COLORS.primary} 
+                  strokeWidth={2} 
+                  name="Total Players" 
+                  connectNulls={true}
+                  dot={renderCustomDot('totalPlayers', chartData.totalPlayersData, false)}
+                  activeDot={{ r: 6 }}
+                  isAnimationActive={false}
+                />
+                
+                {/* Trendline */}
+                <TotalPlayersTrendline data={chartData.totalPlayersData} />
+                
+                {/* Average reference line */}
+                <ReferenceLine 
+                  y={chartData.totalPlayersData.reduce((sum, item) => sum + item.totalPlayers, 0) / chartData.totalPlayersData.length} 
+                  stroke={themeColors.textMuted} 
+                  strokeDasharray="3 3" 
+                  label={{ value: "Average", position: "topRight", style: { fill: themeColors.textMuted } }}
+                />
                 
                 <Brush 
                   dataKey="date" 
@@ -627,14 +694,18 @@ const ChartsSection = ({ playerData, activeView, timeRange, setTimeRange }) => {
   };
 
   return (
-    <div className="bg-white p-4 rounded-lg shadow-md mb-6">
+    <div className="card p-4 mb-6">
       {/* Time filter buttons */}
       <div className="flex flex-wrap gap-2 mb-3">
         {['all', '3months', 'month', 'week', 'recent10', 'recent20'].map(range => (
           <button 
             key={range}
             onClick={() => setTimeRange(range)} 
-            className={`${timeRange === range ? 'bg-blue-600 text-white' : 'bg-gray-200'} py-1 px-3 rounded`}
+            className="py-1 px-3 rounded transition-colors duration-200"
+            style={{
+              backgroundColor: timeRange === range ? 'var(--color-primary)' : 'var(--color-secondary)',
+              color: 'var(--color-textInverse)'
+            }}
           >
             {range === 'all' ? 'All Time' : 
              range === '3months' ? '3 Months' : 
@@ -643,14 +714,6 @@ const ChartsSection = ({ playerData, activeView, timeRange, setTimeRange }) => {
              range === 'recent10' ? 'Last 10' : 'Last 20'}
           </button>
         ))}
-        {activeView === 'performance' && (
-          <button 
-            onClick={() => setShowMovingAverage(!showMovingAverage)}
-            className={`${showMovingAverage ? 'bg-blue-600 text-white' : 'bg-gray-200'} py-1 px-3 rounded`}
-          >
-            {showMovingAverage ? 'Hide 5-Day Avg' : 'Show 5-Day Avg'}
-          </button>
-        )}
       </div>
 
       {/* Custom date range selector */}
@@ -660,18 +723,32 @@ const ChartsSection = ({ playerData, activeView, timeRange, setTimeRange }) => {
             type="date" 
             value={customStartDate} 
             onChange={(e) => setCustomStartDate(e.target.value)}
-            className="border rounded py-1 px-2 text-sm"
+            className="rounded py-1 px-2 text-sm"
+            style={{
+              border: `1px solid var(--color-border)`,
+              backgroundColor: 'var(--color-surface)',
+              color: 'var(--color-textPrimary)'
+            }}
           />
-          <span>to</span>
+          <span style={{ color: 'var(--color-textPrimary)' }}>to</span>
           <input 
             type="date" 
             value={customEndDate} 
             onChange={(e) => setCustomEndDate(e.target.value)}
-            className="border rounded py-1 px-2 text-sm"
+            className="rounded py-1 px-2 text-sm"
+            style={{
+              border: `1px solid var(--color-border)`,
+              backgroundColor: 'var(--color-surface)',
+              color: 'var(--color-textPrimary)'
+            }}
           />
           <button 
             type="submit" 
-            className="bg-blue-100 hover:bg-blue-200 text-blue-700 py-1 px-2 rounded text-sm"
+            className="py-1 px-2 rounded text-sm transition-colors duration-200"
+            style={{
+              backgroundColor: 'var(--color-info)',
+              color: 'var(--color-textInverse)'
+            }}
           >
             Apply
           </button>
@@ -679,7 +756,11 @@ const ChartsSection = ({ playerData, activeView, timeRange, setTimeRange }) => {
             <button 
               type="button" 
               onClick={resetDateRange}
-              className="bg-red-100 hover:bg-red-200 text-red-700 py-1 px-2 rounded text-sm"
+              className="py-1 px-2 rounded text-sm transition-colors duration-200"
+              style={{
+                backgroundColor: 'var(--color-danger)',
+                color: 'var(--color-textInverse)'
+              }}
             >
               Reset
             </button>
@@ -690,7 +771,12 @@ const ChartsSection = ({ playerData, activeView, timeRange, setTimeRange }) => {
           <select
             value={detailLevel}
             onChange={(e) => setDetailLevel(e.target.value)}
-            className="border rounded py-1 px-2 text-sm"
+            className="rounded py-1 px-2 text-sm"
+            style={{
+              border: `1px solid var(--color-border)`,
+              backgroundColor: 'var(--color-surface)',
+              color: 'var(--color-textPrimary)'
+            }}
           >
             <option value="standard">Standard Detail</option>
             <option value="detailed">High Detail</option>
@@ -700,37 +786,26 @@ const ChartsSection = ({ playerData, activeView, timeRange, setTimeRange }) => {
 
       {/* Chart Container */}
       <div className="mb-2">
-        <h3 className="text-lg font-semibold mb-2">
+        <h3 className="text-lg font-semibold mb-2" style={{ color: 'var(--color-textPrimary)' }}>
           {activeView === 'performance' ? 'Performance (Top %)' :
            activeView === 'division' ? 'Division Distribution' :
            activeView === 'divisionProgress' ? 'Division Progress Over Time' :
-           activeView === 'divisionRank' ? 'Division Rank Position' : ''}
+           activeView === 'divisionRank' ? 'Division Rank Position' :
+           activeView === 'totalPlayers' ? 'Total Players Over Time' : ''}
         </h3>
         {renderChart()}
       </div>
       
       {/* Legend for chart elements */}
-      <div className="flex items-center gap-2 text-xs text-gray-600 mt-1 mb-2">
+      <div className="flex items-center gap-2 text-xs mt-1 mb-2" style={{ color: 'var(--color-textSecondary)' }}>
         <div className="flex items-center">
-          <div className="w-3 h-3 bg-blue-500 rounded-full mr-1"></div>
+          <div className="w-3 h-3 rounded-full mr-1" style={{ backgroundColor: 'var(--color-primary)' }}></div>
           <span>Data point</span>
         </div>
         <div className="flex items-center ml-3">
-          <div className="w-3 h-3 bg-green-500 rounded-full mr-1"></div>
+          <div className="w-3 h-3 rounded-full mr-1" style={{ backgroundColor: 'var(--color-success)' }}></div>
           <span>Best result</span>
         </div>
-        {(activeView === 'performance' || activeView === 'divisionRank') && (
-          <>
-            <div className="flex items-center ml-3">
-              <div className="w-4 h-0.5 bg-purple-500 mr-1"></div>
-              <span>5-Race Avg</span>
-            </div>
-            <div className="flex items-center ml-3">
-              <div className="w-4 h-0.5 bg-green-500 border-b border-dashed border-green-500 mr-1"></div>
-              <span>Trend</span>
-            </div>
-          </>
-        )}
       </div>
     </div>
   );

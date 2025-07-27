@@ -2,6 +2,53 @@
 @tailwind components;
 @tailwind utilities;
 
+/* CSS Custom Properties for Theme System */
+:root {
+  /* Default theme colors - will be overridden by ThemeProvider */
+  --color-primary: #3b82f6;
+  --color-primaryHover: #2563eb;
+  --color-secondary: #6b7280;
+  --color-secondaryHover: #4b5563;
+  --color-accent: #8b5cf6;
+  --color-accentHover: #7c3aed;
+  --color-success: #10b981;
+  --color-successHover: #059669;
+  --color-warning: #f59e0b;
+  --color-warningHover: #d97706;
+  --color-danger: #ef4444;
+  --color-dangerHover: #dc2626;
+  --color-info: #06b6d4;
+  --color-infoHover: #0891b2;
+  
+  --color-background: #f8fafc;
+  --color-backgroundSecondary: #f1f5f9;
+  --color-surface: #ffffff;
+  --color-surfaceHover: #f8fafc;
+  
+  --color-textPrimary: #1f2937;
+  --color-textSecondary: #6b7280;
+  --color-textMuted: #9ca3af;
+  --color-textInverse: #ffffff;
+  
+  --color-border: #e5e7eb;
+  --color-borderHover: #d1d5db;
+  
+  --color-glass: rgba(255, 255, 255, 0.8);
+  --color-glassHover: rgba(255, 255, 255, 0.9);
+  --color-glassBorder: rgba(255, 255, 255, 0.2);
+  
+  --color-gradientFrom: #3b82f6;
+  --color-gradientTo: #8b5cf6;
+  --color-backgroundGradient: linear-gradient(135deg, #f0f9ff 0%, #e0e7ff 100%);
+}
+
+/* Theme-aware body styles */
+body {
+  background: var(--color-background);
+  color: var(--color-textPrimary);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
 /* Custom CSS for enhanced UX */
 
 /* Smooth scrolling for the entire page */
@@ -214,38 +261,176 @@ html {
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5);
 }
 
-/* Button variants */
+/* Button variants - Theme-aware */
 .btn-primary {
-  @apply bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2;
+  background-color: var(--color-primary);
+  color: var(--color-textInverse);
+  @apply font-medium py-2 px-4 rounded-lg transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2;
+  border: 1px solid var(--color-primary);
+}
+
+.btn-primary:hover {
+  background-color: var(--color-primaryHover);
+  border-color: var(--color-primaryHover);
+}
+
+.btn-primary:focus {
+  box-shadow: 0 0 0 2px var(--color-primary);
 }
 
 .btn-secondary {
-  @apply bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded-lg transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2;
+  background-color: var(--color-secondary);
+  color: var(--color-textInverse);
+  @apply font-medium py-2 px-4 rounded-lg transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2;
+  border: 1px solid var(--color-secondary);
+}
+
+.btn-secondary:hover {
+  background-color: var(--color-secondaryHover);
+  border-color: var(--color-secondaryHover);
+}
+
+.btn-secondary:focus {
+  box-shadow: 0 0 0 2px var(--color-secondary);
 }
 
 .btn-success {
-  @apply bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2;
+  background-color: var(--color-success);
+  color: var(--color-textInverse);
+  @apply font-medium py-2 px-4 rounded-lg transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2;
+  border: 1px solid var(--color-success);
+}
+
+.btn-success:hover {
+  background-color: var(--color-successHover);
+  border-color: var(--color-successHover);
+}
+
+.btn-success:focus {
+  box-shadow: 0 0 0 2px var(--color-success);
 }
 
 .btn-danger {
-  @apply bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2;
+  background-color: var(--color-danger);
+  color: var(--color-textInverse);
+  @apply font-medium py-2 px-4 rounded-lg transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2;
+  border: 1px solid var(--color-danger);
+}
+
+.btn-danger:hover {
+  background-color: var(--color-dangerHover);
+  border-color: var(--color-dangerHover);
+}
+
+.btn-danger:focus {
+  box-shadow: 0 0 0 2px var(--color-danger);
 }
 
 .btn-warning {
-  @apply bg-yellow-500 hover:bg-yellow-600 text-white font-medium py-2 px-4 rounded-lg transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2;
+  background-color: var(--color-warning);
+  color: var(--color-textInverse);
+  @apply font-medium py-2 px-4 rounded-lg transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2;
+  border: 1px solid var(--color-warning);
 }
 
-/* Card variants */
+.btn-warning:hover {
+  background-color: var(--color-warningHover);
+  border-color: var(--color-warningHover);
+}
+
+.btn-warning:focus {
+  box-shadow: 0 0 0 2px var(--color-warning);
+}
+
+.btn-info {
+  background-color: var(--color-info);
+  color: var(--color-textInverse);
+  @apply font-medium py-2 px-4 rounded-lg transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2;
+  border: 1px solid var(--color-info);
+}
+
+.btn-info:hover {
+  background-color: var(--color-infoHover);
+  border-color: var(--color-infoHover);
+}
+
+.btn-info:focus {
+  box-shadow: 0 0 0 2px var(--color-info);
+}
+
+/* Outline button variants */
+.btn-outline-primary {
+  background-color: transparent;
+  color: var(--color-primary);
+  border: 2px solid var(--color-primary);
+  @apply font-medium py-2 px-4 rounded-lg transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2;
+}
+
+.btn-outline-primary:hover {
+  background-color: var(--color-primary);
+  color: var(--color-textInverse);
+}
+
+.btn-outline-secondary {
+  background-color: transparent;
+  color: var(--color-secondary);
+  border: 2px solid var(--color-secondary);
+  @apply font-medium py-2 px-4 rounded-lg transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2;
+}
+
+.btn-outline-secondary:hover {
+  background-color: var(--color-secondary);
+  color: var(--color-textInverse);
+}
+
+/* Card variants - Theme-aware */
 .card {
-  @apply bg-white rounded-xl shadow-lg border border-gray-200 transition-all duration-300 hover:shadow-xl;
+  background-color: var(--color-surface);
+  color: var(--color-textPrimary);
+  border: 1px solid var(--color-border);
+  @apply rounded-xl shadow-lg transition-all duration-300 hover:shadow-xl;
+}
+
+.card:hover {
+  background-color: var(--color-surfaceHover);
+  border-color: var(--color-borderHover);
 }
 
 .card-glass {
-  @apply bg-white/80 backdrop-blur-sm rounded-xl shadow-lg border border-white/20 transition-all duration-300 hover:shadow-xl hover:bg-white/90;
+  background: var(--color-glass);
+  color: var(--color-textPrimary);
+  border: 1px solid var(--color-glassBorder);
+  @apply backdrop-blur-sm rounded-xl shadow-lg transition-all duration-300 hover:shadow-xl;
+}
+
+.card-glass:hover {
+  background: var(--color-glassHover);
 }
 
 .card-gradient {
-  @apply bg-gradient-to-br from-blue-50 to-indigo-100 rounded-xl shadow-lg border border-blue-200 transition-all duration-300 hover:shadow-xl;
+  background: var(--color-backgroundGradient);
+  color: var(--color-textPrimary);
+  border: 1px solid var(--color-border);
+  @apply rounded-xl shadow-lg transition-all duration-300 hover:shadow-xl;
+}
+
+.card-primary {
+  background-color: var(--color-primary);
+  color: var(--color-textInverse);
+  border: 1px solid var(--color-primary);
+  @apply rounded-xl shadow-lg transition-all duration-300 hover:shadow-xl;
+}
+
+.card-primary:hover {
+  background-color: var(--color-primaryHover);
+  border-color: var(--color-primaryHover);
+}
+
+.card-secondary {
+  background-color: var(--color-backgroundSecondary);
+  color: var(--color-textPrimary);
+  border: 1px solid var(--color-border);
+  @apply rounded-xl shadow-lg transition-all duration-300 hover:shadow-xl;
 }
 
 /* Text effects */

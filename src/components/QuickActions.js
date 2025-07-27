@@ -1,56 +1,60 @@
 // src/components/QuickActions.js
 import React, { useState } from 'react';
+import { getTranslation } from '../i18n/translations';
 
 const QuickActions = ({ playerData, onAction }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
+  
+  // Language is now fixed to English
+  const t = (key, params = {}) => getTranslation(key, 'en', params);
 
   const quickActions = [
     {
       id: 'add-data',
       icon: '➕',
-      label: 'Daten hinzufügen',
-      description: 'Neue COTD-Ergebnisse importieren',
+      label: t('quickActions.addData'),
+      description: t('quickActions.addDataDesc'),
       color: 'bg-blue-500 hover:bg-blue-600',
       action: () => onAction('add-data')
     },
     {
       id: 'export-data',
       icon: '📤',
-      label: 'Exportieren',
-      description: 'Daten als JSON herunterladen',
+      label: t('quickActions.exportData'),
+      description: t('quickActions.exportDataDesc'),
       color: 'bg-green-500 hover:bg-green-600',
       action: () => onAction('export-data')
     },
     {
       id: 'view-trends',
       icon: '📊',
-      label: 'Trends anzeigen',
-      description: 'Performance-Entwicklung visualisieren',
+      label: t('quickActions.viewTrends'),
+      description: t('quickActions.viewTrendsDesc'),
       color: 'bg-purple-500 hover:bg-purple-600',
       action: () => onAction('view-trends')
     },
     {
       id: 'best-performance',
       icon: '🏆',
-      label: 'Beste Ergebnisse',
-      description: 'Top-Platzierungen anzeigen',
+      label: t('quickActions.bestPerformance'),
+      description: t('quickActions.bestPerformanceDesc'),
       color: 'bg-yellow-500 hover:bg-yellow-600',
       action: () => onAction('best-performance')
     },
     {
       id: 'map-analysis',
       icon: '🗺️',
-      label: 'Map-Analyse',
-      description: 'Performance nach Map-Typ',
+      label: t('quickActions.mapAnalysis'),
+      description: t('quickActions.mapAnalysisDesc'),
       color: 'bg-indigo-500 hover:bg-indigo-600',
       action: () => onAction('map-analysis')
     },
     {
       id: 'share-stats',
       icon: '🔗',
-      label: 'Teilen',
-      description: 'Statistiken teilen',
+      label: t('quickActions.shareStats'),
+      description: t('quickActions.shareStatsDesc'),
       color: 'bg-pink-500 hover:bg-pink-600',
       action: () => onAction('share-stats')
     }
