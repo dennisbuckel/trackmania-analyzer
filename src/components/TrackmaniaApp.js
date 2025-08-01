@@ -44,7 +44,6 @@ const TrackmaniaApp = () => {
           setIsFirstTime(false);
         }
       } catch (error) {
-        console.error('Error loading data:', error);
       }
     }
     
@@ -103,7 +102,6 @@ const TrackmaniaApp = () => {
         alert('❌ No valid data found. Please check the format.');
       }
     } catch (err) {
-      console.error('Data processing error:', err);
       alert(`❌ Error processing data: ${err.message}`);
     }
   };
@@ -214,7 +212,6 @@ const TrackmaniaApp = () => {
             setPlayerData(parsed);
             setFilteredData(parsed);
           } catch (error) {
-            console.error('Error reloading data:', error);
           }
         }
         break;
@@ -743,7 +740,6 @@ Crazy City
         alert('❌ Error loading sample data. Please try again.');
       }
     } catch (error) {
-      console.error('Error loading sample data:', error);
       alert('❌ Error loading sample data. Please try again.');
     }
   };
@@ -830,12 +826,6 @@ Crazy City
                       className="btn-info flex items-center gap-2 px-6 py-3 text-base font-semibold"
                     >
                       🏁 Show Visual Guide
-                    </button>
-                    <button 
-                      onClick={() => setShowInfo(!showInfo)} 
-                      className="btn-secondary flex items-center gap-2 px-6 py-3 text-base"
-                    >
-                      📖 {showInfo ? 'Hide Instructions' : 'Show Instructions'}
                     </button>
                     <button 
                       onClick={loadSampleData} 

@@ -40,7 +40,6 @@ const DataImportRevolutionary = ({ pasteAreaContent, setPasteAreaContent, onData
         alert('❌ No valid data found. Please check the format.');
       }
     } catch (error) {
-      console.error('Parser Error:', error);
       alert(`❌ Parsing error: ${error.message}`);
       setParseResult({
         results: [],
@@ -292,18 +291,6 @@ Flow State
           )}
         </button>
         
-        <button
-          onClick={loadSampleData}
-          className="py-3 px-4 rounded-lg font-medium transition-colors duration-200"
-          style={{
-            backgroundColor: 'var(--color-success)',
-            color: 'var(--color-textInverse)'
-          }}
-          onMouseEnter={(e) => e.target.style.backgroundColor = 'var(--color-successHover)'}
-          onMouseLeave={(e) => e.target.style.backgroundColor = 'var(--color-success)'}
-        >
-          📋 Load Sample Data
-        </button>
 
         <div className="text-sm ml-auto" style={{ color: 'var(--color-textMuted)' }}>
           {pasteAreaContent ? 

@@ -61,39 +61,34 @@ const StatsOverviewRevolutionary = ({ playerData, timeRange }) => {
       else if (trendValue < -5) trend = 'declining';
     }
     
-    // Progress Factor: Compares recent performance vs older performance
-    // Uses linear regression slope on percentile data over time to determine improvement trend
-    let progressFactor = 0;
-    let progressExplanation = "Not enough data";
+    // Average Division in Last 10 Matches
+    let avgDivLast10 = 'N/A';
+    let avgDivLast10Explanation = "Not enough data";
     
-    if (rankData.length >= 6) {
-      // Sort by date to get chronological order
-      const chronologicalData = [...rankData].sort((a, b) => new Date(a.date) - new Date(b.date));
+    if (divisionData.length >= 1) {
+      // Get last 10 matches with division data
+      const last10Matches = divisionData.slice(0, Math.min(10, divisionData.length));
       
-      // Calculate linear regression slope on percentiles over time
-      const n = chronologicalData.length;
-      let sumX = 0, sumY = 0, sumXY = 0, sumXX = 0;
-      
-      chronologicalData.forEach((item, index) => {
-        const x = index; // Time index
-        const y = 100 - (item.percentile || 50); // Invert percentile (higher = better)
-        sumX += x;
-        sumY += y;
-        sumXY += x * y;
-        sumXX += x * x;
-      });
-      
-      const slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX);
-      
-      // Convert slope to progress factor (-100 to +100)
-      progressFactor = Math.max(-100, Math.min(100, slope * 10));
-      
-      if (progressFactor > 5) {
-        progressExplanation = "Improving: Recent races better than older ones";
-      } else if (progressFactor < -5) {
-        progressExplanation = "Declining: Recent races worse than older ones";
-      } else {
-        progressExplanation = "Stable: No significant trend detected";
+      if (last10Matches.length > 0) {
+        const avgDiv = last10Matches.reduce((sum, item) => sum + item.division, 0) / last10Matches.length;
+        avgDivLast10 = avgDiv.toFixed(1);
+        
+        const matchCount = last10Matches.length;
+        avgDivLast10Explanation = `Average division in last ${matchCount} match${matchCount > 1 ? 'es' : ''}`;
+        
+        // Compare with overall average if we have enough data
+        if (divisionData.length > last10Matches.length) {
+          const overallAvg = divisionData.reduce((sum, item) => sum + item.division, 0) / divisionData.length;
+          const difference = overallAvg - avgDiv;
+          
+          if (difference > 0.5) {
+            avgDivLast10Explanation += " (Better than overall)";
+          } else if (difference < -0.5) {
+            avgDivLast10Explanation += " (Worse than overall)";
+          } else {
+            avgDivLast10Explanation += " (Similar to overall)";
+          }
+        }
       }
     }
     
@@ -124,8 +119,8 @@ const StatsOverviewRevolutionary = ({ playerData, timeRange }) => {
       divisionCounts,
       trend,
       trendValue: Math.abs(trendValue).toFixed(1),
-      progressFactor: progressFactor.toFixed(0),
-      progressExplanation,
+      avgDivLast10: avgDivLast10,
+      avgDivLast10Explanation,
       eliteRaceCount: eliteRaces.length,
       topPercentCount: topPercentRaces.length,
       recentForm: recentRaces.length > 0 ? (recentRaces.reduce((sum, item) => sum + (item.percentile || 50), 0) / recentRaces.length).toFixed(1) : 'N/A'
@@ -364,14 +359,13 @@ const StatsOverviewRevolutionary = ({ playerData, timeRange }) => {
         animationPhase >= 2 ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
       }`}>
         <StatCard
-          title="Progress Factor"
-          value={stats.progressFactor > 0 ? `+${stats.progressFactor}` : stats.progressFactor}
-          subtitle={stats.progressExplanation}
+          title="Avg Div Last 10"
+          value={stats.avgDivLast10}
+          subtitle={stats.avgDivLast10Explanation}
           icon="📈"
           color="#8b5cf6"
           delay={700}
-          trend={stats.progressFactor > 5 ? 'up' : stats.progressFactor < -5 ? 'down' : 'stable'}
-          isHovered={hoveredCard === "Progress Factor"}
+          isHovered={hoveredCard === "Avg Div Last 10"}
         />
         
         <StatCard

@@ -1,18 +1,20 @@
 /**
  * Spezialisierter Parser für trackmania.io Datenformat
  * Revolutionärer Ansatz: Strukturierte Datenextraktion statt Regex-Rätselraten
+ * 
+ * Unterstützt zwei Modi:
+ * 1. Mit Header: Vollständige Tabelle von trackmania.io kopiert (empfohlen)
+ * 2. Ohne Header: Nur die Datenzeilen kopiert (flexibler Parsing-Modus)
  */
 
 export default function parseTrackmaniaIoData(textData) {
-  console.log('🚀 Revolutionärer trackmania.io Parser gestartet');
   
   const lines = textData.split('\n').map(line => line.trim()).filter(line => line);
   const results = [];
   const errors = [];
   
-  console.log(`📊 Verarbeite ${lines.length} Zeilen`);
 
-  // Erkenne Header-Zeile (sollte die Spalten enthalten)
+  // Erkenne Header-Zeile (optional - falls vorhanden)
   const headerIndex = lines.findIndex(line => 
     line.includes('Cup of the Day') && 
     line.includes('Map') && 
@@ -20,16 +22,21 @@ export default function parseTrackmaniaIoData(textData) {
     line.includes('Rank')
   );
 
-  if (headerIndex === -1) {
-    throw new Error('❌ Trackmania.io Header nicht gefunden. Bitte kopieren Sie die komplette Tabelle von trackmania.io.');
-  }
+  let startIndex = 0;
+  let hasHeader = false;
 
-  console.log(`✅ Header gefunden in Zeile ${headerIndex + 1}`);
+  if (headerIndex !== -1) {
+    startIndex = headerIndex + 1;
+    hasHeader = true;
+  } else {
+    startIndex = 0;
+    hasHeader = false;
+  }
 
   let currentEntry = null;
   let lineNumber = 0;
 
-  for (let i = headerIndex + 1; i < lines.length; i++) {
+  for (let i = startIndex; i < lines.length; i++) {
     const line = lines[i];
     lineNumber = i + 1;
 
@@ -37,8 +44,8 @@ export default function parseTrackmaniaIoData(textData) {
       // Überspringe leere Zeilen
       if (!line) continue;
 
-      // Erkenne COTD-Zeile (beginnt mit "COTD" oder "Cup of the Day")
-      if (line.startsWith('COTD ') || line.startsWith('Cup of the Day ')) {
+      // Erkenne COTD-Zeile (beginnt mit "COTD" oder "Cup of the Day" oder enthält Datum-Pattern)
+      if (line.startsWith('COTD ') || line.startsWith('Cup of the Day ') || isCotdLine(line)) {
         // Speichere vorherigen Eintrag falls vorhanden
         if (currentEntry && isValidEntry(currentEntry)) {
           calculatePoints(currentEntry);
@@ -59,9 +66,19 @@ export default function parseTrackmaniaIoData(textData) {
         continue;
       }
 
-      // Wenn wir keinen aktuellen Eintrag haben, überspringe
+      // Wenn wir keinen aktuellen Eintrag haben, versuche einen zu erstellen
       if (!currentEntry) {
-        continue;
+        // Ohne Header: Versuche aus der ersten Datenzeile ein COTD-Entry zu erstellen
+        if (!hasHeader) {
+          const inferredEntry = inferCotdFromDataLine(line, lineNumber);
+          if (inferredEntry) {
+            currentEntry = inferredEntry;
+          } else {
+            continue;
+          }
+        } else {
+          continue;
+        }
       }
 
       // Parse Datenzeile (Tab-getrennte Werte)
@@ -92,9 +109,7 @@ export default function parseTrackmaniaIoData(textData) {
     return entry;
   });
 
-  console.log(`✅ ${validatedResults.length} COTD-Einträge erfolgreich geparst`);
   if (errors.length > 0) {
-    console.warn(`⚠️ ${errors.length} Warnungen/Fehler:`, errors);
   }
 
   // Sortiere nach Datum absteigend
@@ -106,27 +121,105 @@ export default function parseTrackmaniaIoData(textData) {
     summary: {
       totalEntries: sortedResults.length,
       errorCount: errors.length,
-      successRate: ((sortedResults.length / (sortedResults.length + errors.length)) * 100).toFixed(1)
+      successRate: ((sortedResults.length / (sortedResults.length + errors.length)) * 100).toFixed(1),
+      parsingMode: hasHeader ? 'Mit Header (strukturiert)' : 'Ohne Header (flexibel)',
+      hasHeader: hasHeader
     }
   };
 }
 
 /**
- * Parse COTD-Zeile (z.B. "COTD 2025-07-26 #1")
+ * Versuche COTD-Eintrag aus Datenzeile zu inferieren (für headerlose Daten)
+ */
+function inferCotdFromDataLine(line, lineNumber) {
+  // Suche nach Datum-Pattern in der Zeile
+  const dateMatch = line.match(/(\d{4}-\d{2}-\d{2})/);
+  if (dateMatch) {
+    return {
+      format: 'COTD',
+      date: dateMatch[1],
+      cotdNumber: 1
+    };
+  }
+  
+  // Fallback: Verwende aktuelles Datum wenn keine anderen Hinweise vorhanden
+  const today = new Date();
+  const dateStr = today.toISOString().split('T')[0];
+  
+  // Nur als letzter Ausweg und nur wenn die Zeile wie Trackmania-Daten aussieht
+  if (line.includes('/') || line.includes('Division') || /^\d+(?:st|nd|rd|th)/.test(line)) {
+    return {
+      format: 'COTD',
+      date: dateStr,
+      cotdNumber: 1
+    };
+  }
+  
+  return null;
+}
+
+/**
+ * Prüfe ob eine Zeile eine COTD-Zeile ist (flexibel für verschiedene Formate)
+ */
+function isCotdLine(line) {
+  // Erkenne Datum-Pattern (YYYY-MM-DD) in der Zeile
+  const datePattern = /\d{4}-\d{2}-\d{2}/;
+  
+  // Erkenne typische COTD-Indikatoren
+  const cotdIndicators = [
+    /^COTD/i,
+    /Cup of the Day/i,
+    /^\d{4}-\d{2}-\d{2}/, // Zeile beginnt mit Datum
+    /#\d+/ // Enthält #Nummer
+  ];
+  
+  return datePattern.test(line) && cotdIndicators.some(pattern => pattern.test(line));
+}
+
+/**
+ * Parse COTD-Zeile (z.B. "COTD 2025-07-26 #1" oder "2025-07-26 #1" oder nur "2025-07-26")
  */
 function parseCotdLine(line) {
-  // Regex für COTD-Format: COTD YYYY-MM-DD #N
-  const cotdMatch = line.match(/(COTD|Cup of the Day)\s+(\d{4}-\d{2}-\d{2})\s*#?(\d+)?/);
+  // Erweiterte Regex für verschiedene COTD-Formate
+  const patterns = [
+    // Standard: "COTD 2025-07-26 #1" oder "Cup of the Day 2025-07-26 #1"
+    /(COTD|Cup of the Day)\s+(\d{4}-\d{2}-\d{2})\s*#?(\d+)?/,
+    // Nur Datum mit Nummer: "2025-07-26 #1"
+    /^(\d{4}-\d{2}-\d{2})\s*#?(\d+)?/,
+    // Datum irgendwo in der Zeile: "... 2025-07-26 ..."
+    /(\d{4}-\d{2}-\d{2})/
+  ];
   
-  if (!cotdMatch) {
-    return null;
+  for (const pattern of patterns) {
+    const match = line.match(pattern);
+    if (match) {
+      // Bestimme welches Match-Pattern verwendet wurde
+      if (pattern === patterns[0]) {
+        // Standard COTD Format
+        return {
+          format: match[1],
+          date: match[2],
+          cotdNumber: match[3] ? parseInt(match[3], 10) : 1
+        };
+      } else if (pattern === patterns[1]) {
+        // Datum mit Nummer
+        return {
+          format: 'COTD',
+          date: match[1],
+          cotdNumber: match[2] ? parseInt(match[2], 10) : 1
+        };
+      } else {
+        // Nur Datum gefunden
+        return {
+          format: 'COTD',
+          date: match[1],
+          cotdNumber: 1
+        };
+      }
+    }
   }
-
-  return {
-    format: cotdMatch[1],
-    date: cotdMatch[2],
-    cotdNumber: cotdMatch[3] ? parseInt(cotdMatch[3], 10) : 1
-  };
+  
+  return null;
 }
 
 /**
@@ -184,59 +277,117 @@ function parseDataLine(line, currentEntry) {
 }
 
 /**
- * Parse Tab-getrennte Zeile (Hauptformat von trackmania.io)
- * KORRIGIERT: Das Format ist nicht wirklich Tab-getrennt, sondern zeilenweise
+ * Parse Tab-getrennte Zeile (Firefox-Format von trackmania.io)
+ * Firefox kopiert Daten oft mit Tabs zwischen den Spalten
  */
 function parseTabSeparatedLine(line, currentEntry) {
-  const parts = line.split('\t').map(part => part.trim());
+  const parts = line.split('\t').map(part => part.trim()).filter(part => part);
   
-  // Wenn es wirklich Tab-getrennt ist (z.B. Header oder spezielle Zeilen)
-  if (parts.length >= 5) {
-    const [mapName, division, divisionRank, overallRank, qualificationRank] = parts;
+  // Firefox-Format: Tab-getrennte Daten in einer Zeile
+  if (parts.length >= 3) {
     const entry = { ...currentEntry };
-
-    // Parse Map-Name
-    if (mapName && mapName !== '') {
-      entry.map = mapName;
-    }
-
-    // Parse Division
-    if (division && /^\d+$/.test(division)) {
-      entry.division = parseInt(division, 10);
-    }
-
-    // Parse Division Rank
-    if (divisionRank) {
-      const divRankMatch = divisionRank.match(/^(\d+)(?:st|nd|rd|th)?\s*\/\s*(\d+)$/);
-      if (divRankMatch) {
-        entry.divisionRank = parseInt(divRankMatch[1], 10);
-        entry.divisionPlayers = parseInt(divRankMatch[2], 10);
-      } else if (divisionRank.includes('(unplayed)')) {
-        entry.unplayed = true;
+    
+    // Erkenne verschiedene Firefox Tab-Formate
+    // Format 1: "MapName \t Division \t DivisionRank"
+    if (parts.length === 3) {
+      const [mapName, division, divisionRank] = parts;
+      
+      // Parse Map-Name (wenn es kein reiner Zahlen-String ist)
+      if (mapName && !(/^\d+$/.test(mapName))) {
+        entry.map = mapName;
       }
-    }
-
-    // Parse Overall Rank
-    if (overallRank) {
-      const overallResult = parseRankString(overallRank);
-      if (overallResult) {
-        entry.overallRank = overallResult.rank;
-        entry.totalPlayers = overallResult.total;
-        entry.percentile = overallResult.percentile;
+      
+      // Parse Division
+      if (division && /^\d+$/.test(division)) {
+        entry.division = parseInt(division, 10);
       }
-    }
-
-    // Parse Qualification Rank
-    if (qualificationRank) {
-      const qualiResult = parseRankString(qualificationRank);
-      if (qualiResult) {
-        entry.qualificationRank = qualiResult.rank;
-        entry.qualificationTotal = qualiResult.total;
-        entry.qualificationPercentile = qualiResult.percentile;
+      
+      // Parse Division Rank
+      if (divisionRank) {
+        const divRankMatch = divisionRank.match(/^(\d+)(?:st|nd|rd|th)?\s*\/\s*(\d+)$/);
+        if (divRankMatch) {
+          entry.divisionRank = parseInt(divRankMatch[1], 10);
+          entry.divisionPlayers = parseInt(divRankMatch[2], 10);
+        }
       }
+      
+      return { entry };
     }
+    
+    // Format 2: "OverallRank \t QualificationRank" (Rank-Zeile)
+    if (parts.length === 2) {
+      const [overallRank, qualificationRank] = parts;
+      
+      // Parse Overall Rank
+      if (overallRank && overallRank.includes('(top')) {
+        const overallResult = parseRankString(overallRank);
+        if (overallResult) {
+          entry.overallRank = overallResult.rank;
+          entry.totalPlayers = overallResult.total;
+          entry.percentile = overallResult.percentile;
+        }
+      }
+      
+      // Parse Qualification Rank
+      if (qualificationRank && qualificationRank.includes('(top')) {
+        const qualiResult = parseRankString(qualificationRank);
+        if (qualiResult) {
+          entry.qualificationRank = qualiResult.rank;
+          entry.qualificationTotal = qualiResult.total;
+          entry.qualificationPercentile = qualiResult.percentile;
+        }
+      }
+      
+      return { entry };
+    }
+    
+    // Format 3: Vollständige Zeile mit allen Daten (5+ Teile)
+    if (parts.length >= 5) {
+      const [mapName, division, divisionRank, overallRank, qualificationRank] = parts;
+      
+      // Parse Map-Name
+      if (mapName && mapName !== '') {
+        entry.map = mapName;
+      }
 
-    return { entry };
+      // Parse Division
+      if (division && /^\d+$/.test(division)) {
+        entry.division = parseInt(division, 10);
+      }
+
+      // Parse Division Rank
+      if (divisionRank) {
+        const divRankMatch = divisionRank.match(/^(\d+)(?:st|nd|rd|th)?\s*\/\s*(\d+)$/);
+        if (divRankMatch) {
+          entry.divisionRank = parseInt(divRankMatch[1], 10);
+          entry.divisionPlayers = parseInt(divRankMatch[2], 10);
+        } else if (divisionRank.includes('(unplayed)')) {
+          entry.unplayed = true;
+        }
+      }
+
+      // Parse Overall Rank
+      if (overallRank) {
+        const overallResult = parseRankString(overallRank);
+        if (overallResult) {
+          entry.overallRank = overallResult.rank;
+          entry.totalPlayers = overallResult.total;
+          entry.percentile = overallResult.percentile;
+        }
+      }
+
+      // Parse Qualification Rank
+      if (qualificationRank) {
+        const qualiResult = parseRankString(qualificationRank);
+        if (qualiResult) {
+          entry.qualificationRank = qualiResult.rank;
+          entry.qualificationTotal = qualiResult.total;
+          entry.qualificationPercentile = qualiResult.percentile;
+        }
+      }
+
+      return { entry };
+    }
   }
 
   // ENDLOSSCHLEIFE VERMEIDEN: Nicht parseDataLine aufrufen!

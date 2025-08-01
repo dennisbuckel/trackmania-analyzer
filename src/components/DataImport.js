@@ -176,15 +176,43 @@ SKY DUST 11 4th / 52 644th / 2072 (top 31.08%) 682nd / 2072 (top 32.92%)`;
         <div className="mt-4 text-sm text-gray-500">
           <p>Tip: Press Ctrl+Enter to process the data directly.</p>
           <div className="mt-2 p-3 bg-blue-50 rounded">
-            <h4 className="font-semibold">Supported Format:</h4>
-            <pre className="mt-1 text-xs overflow-x-auto">
-              COTD 2025-03-04 #1
-              5 hours ago
-              **Map Name**
-              Division 8
-              5th / 44
-              453rd / 2281 (top 19.86%) 462nd / 2281 (top 20.25%)
-            </pre>
+            <h4 className="font-semibold">Supported Formats:</h4>
+            <div className="mt-2 space-y-3">
+              <div>
+                <p className="text-xs font-medium text-blue-700">✅ With Header (Recommended):</p>
+                <pre className="mt-1 text-xs overflow-x-auto bg-white p-2 rounded border">
+Cup of the Day	Map	Division	Rank	Overall Rank	Qualification Rank
+COTD 2025-03-04 #1
+Map Name
+Division 8
+5th / 44
+453rd / 2281 (top 19.86%) 462nd / 2281 (top 20.25%)
+                </pre>
+              </div>
+              <div>
+                <p className="text-xs font-medium text-green-700">✅ Without Header (Flexible):</p>
+                <pre className="mt-1 text-xs overflow-x-auto bg-white p-2 rounded border">
+COTD 2025-03-04 #1
+Map Name
+Division 8
+5th / 44
+453rd / 2281 (top 19.86%) 462nd / 2281 (top 20.25%)
+                </pre>
+              </div>
+              <div>
+                <p className="text-xs font-medium text-orange-700">✅ Data Only (Auto-detect):</p>
+                <pre className="mt-1 text-xs overflow-x-auto bg-white p-2 rounded border">
+Map Name
+Division 8
+5th / 44
+453rd / 2281 (top 19.86%) 462nd / 2281 (top 20.25%)
+                </pre>
+              </div>
+            </div>
+            <p className="mt-2 text-xs text-gray-600">
+              💡 The parser automatically detects the format and adapts accordingly. 
+              You can now copy just the data lines without worrying about the header!
+            </p>
           </div>
         </div>
       )}

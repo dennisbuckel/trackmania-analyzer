@@ -3,7 +3,6 @@ export default function parseTrackmaniaData(textData) {
   const lines = textData.split('\n');
   const results = [];
   
-  console.log(`Verarbeite ${lines.length} Zeilen`);
 
   let currentEntry = {};
 
@@ -110,7 +109,6 @@ export default function parseTrackmaniaData(textData) {
     results.push({ ...currentEntry });
   }
 
-  console.log(`Erfolgreich ${results.length} COTD-Einträge geparst`);
 
   // Sortiert nach Datum absteigend
   return results.sort((a, b) => new Date(b.date) - new Date(a.date));

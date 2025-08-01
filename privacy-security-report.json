@@ -1,0 +1,141 @@
+{
+  "fonts": {
+    "usedFontFamilies": [
+      "ui-sans-serif, system-ui, sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\", \"Noto Color Emoji\"",
+      "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, \"Liberation Mono\", \"Courier New\", monospace"
+    ],
+    "fontFaceRules": [],
+    "externalFonts": [],
+    "googleFonts": [],
+    "allFontRequests": [],
+    "forbiddenFonts": []
+  },
+  "cookies": {
+    "httpCookies": [],
+    "localStorage": [
+      {
+        "key": "trackmania-dark-mode",
+        "value": "false",
+        "type": "localStorage"
+      },
+      {
+        "key": "trackmania-theme",
+        "value": "default",
+        "type": "localStorage"
+      }
+    ],
+    "sessionStorage": [],
+    "indexedDB": []
+  },
+  "networkRequests": [
+    {
+      "url": "http://localhost:3000/",
+      "method": "GET",
+      "resourceType": "document",
+      "headers": {
+        "accept-language": "de-DE,de;q=0.9",
+        "upgrade-insecure-requests": "1",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not)A;Brand\";v=\"8\", \"Chromium\";v=\"138\"",
+        "sec-ch-ua-mobile": "?0",
+        "sec-ch-ua-platform": "\"Windows\"",
+        "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7"
+      },
+      "timestamp": "2025-08-01T10:00:53.949Z"
+    },
+    {
+      "url": "http://localhost:3000/static/js/bundle.js",
+      "method": "GET",
+      "resourceType": "script",
+      "headers": {
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "http://localhost:3000/",
+        "accept-language": "de-DE,de;q=0.9",
+        "sec-ch-ua": "\"Not)A;Brand\";v=\"8\", \"Chromium\";v=\"138\"",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+        "sec-ch-ua-mobile": "?0",
+        "accept": "*/*"
+      },
+      "timestamp": "2025-08-01T10:00:54.242Z"
+    },
+    {
+      "url": "http://localhost:3000/manifest.json",
+      "method": "GET",
+      "resourceType": "other",
+      "headers": {
+        "accept": "*/*",
+        "accept-language": "de-DE,de;q=0.9",
+        "referer": "http://localhost:3000/",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not)A;Brand\";v=\"8\", \"Chromium\";v=\"138\"",
+        "sec-ch-ua-mobile": "?0",
+        "sec-ch-ua-platform": "\"Windows\""
+      },
+      "timestamp": "2025-08-01T10:00:54.324Z"
+    },
+    {
+      "url": "http://localhost:3000/",
+      "method": "GET",
+      "resourceType": "other",
+      "headers": {
+        "accept": "*/*",
+        "accept-language": "de-DE,de;q=0.9",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Not)A;Brand\";v=\"8\", \"Chromium\";v=\"138\"",
+        "sec-ch-ua-mobile": "?0",
+        "sec-ch-ua-platform": "\"Windows\""
+      },
+      "timestamp": "2025-08-01T10:00:54.324Z"
+    },
+    {
+      "url": "http://localhost:3000/manifest.json",
+      "method": "GET",
+      "resourceType": "manifest",
+      "headers": {
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "http://localhost:3000/",
+        "accept-language": "de-DE,de;q=0.9",
+        "sec-ch-ua": "\"Not)A;Brand\";v=\"8\", \"Chromium\";v=\"138\"",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+        "sec-ch-ua-mobile": "?0",
+        "accept": "*/*"
+      },
+      "timestamp": "2025-08-01T10:00:54.598Z"
+    },
+    {
+      "url": "http://localhost:3000/favicon.ico",
+      "method": "GET",
+      "resourceType": "other",
+      "headers": {
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "http://localhost:3000/",
+        "accept-language": "de-DE,de;q=0.9",
+        "sec-ch-ua": "\"Not)A;Brand\";v=\"8\", \"Chromium\";v=\"138\"",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+        "sec-ch-ua-mobile": "?0",
+        "accept": "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8"
+      },
+      "timestamp": "2025-08-01T10:00:54.602Z"
+    },
+    {
+      "url": "http://localhost:3000/logo192.png",
+      "method": "GET",
+      "resourceType": "other",
+      "headers": {
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "http://localhost:3000/",
+        "accept-language": "de-DE,de;q=0.9",
+        "sec-ch-ua": "\"Not)A;Brand\";v=\"8\", \"Chromium\";v=\"138\"",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+        "sec-ch-ua-mobile": "?0",
+        "accept": "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8"
+      },
+      "timestamp": "2025-08-01T10:00:54.614Z"
+    }
+  ],
+  "privacy": {
+    "trackingScripts": [],
+    "thirdPartyDomains": [],
+    "totalExternalRequests": 0
+  }
+}
