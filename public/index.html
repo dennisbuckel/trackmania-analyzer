@@ -1,30 +1,96 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" prefix="og: http://ogp.me/ns#">
   <head>
     <meta charset="utf-8" />
-    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#000000" />
-    <meta
-      name="description"
-      content="Web site created using create-react-app"
-    />
-    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
-    <!--
-      manifest.json provides metadata used when your web app is installed on a
-      user's mobile device or desktop. See https://developers.google.com/web/fundamentals/web-app-manifest/
-    -->
+    
+    <!-- Primary Meta Tags -->
+    <title>Trackmania COTD Analyzer - Analyze Your Cup of the Day Performance</title>
+    <meta name="title" content="Trackmania COTD Analyzer - Analyze Your Cup of the Day Performance" />
+    <meta name="description" content="Modern web application for analyzing your Trackmania Cup of the Day performance. Track rankings, visualize progress, and discover patterns in your racing data. Free, privacy-focused, and works offline." />
+    <meta name="keywords" content="trackmania, cotd, cup of the day, racing, analytics, performance, charts, gaming, trackmania analyzer, racing statistics, esports, competitive racing" />
+    <meta name="author" content="Trackmania COTD Analyzer Team" />
+    <meta name="robots" content="index, follow" />
+    <meta name="language" content="English" />
+    <meta name="revisit-after" content="7 days" />
+    
+    <!-- Viewport and Mobile -->
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="COTD Analyzer" />
+    <meta name="application-name" content="COTD Analyzer" />
+    <meta name="msapplication-TileColor" content="#3b82f6" />
+    <meta name="theme-color" content="#3b82f6" />
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://cotdanalyzer.com/" />
+    <meta property="og:title" content="Trackmania COTD Analyzer - Analyze Your Cup of the Day Performance" />
+    <meta property="og:description" content="Modern web application for analyzing your Trackmania Cup of the Day performance. Track rankings, visualize progress, and discover patterns in your racing data." />
+    <meta property="og:image" content="https://cotdanalyzer.com/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Trackmania COTD Analyzer Dashboard Screenshot" />
+    <meta property="og:site_name" content="Trackmania COTD Analyzer" />
+    <meta property="og:locale" content="en_US" />
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content="https://cotdanalyzer.com/" />
+    <meta property="twitter:title" content="Trackmania COTD Analyzer - Analyze Your Cup of the Day Performance" />
+    <meta property="twitter:description" content="Modern web application for analyzing your Trackmania Cup of the Day performance. Track rankings, visualize progress, and discover patterns in your racing data." />
+    <meta property="twitter:image" content="https://cotdanalyzer.com/twitter-image.png" />
+    <meta property="twitter:image:alt" content="Trackmania COTD Analyzer Dashboard Screenshot" />
+    <meta property="twitter:creator" content="@TrackmaniaAnalyzer" />
+    
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://cotdanalyzer.com/" />
+    
+    <!-- Icons and Manifest -->
+    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" sizes="any" />
+    <link rel="icon" href="%PUBLIC_URL%/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="%PUBLIC_URL%/apple-touch-icon.png" />
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
-    <!--
-      Notice the use of %PUBLIC_URL% in the tags above.
-      It will be replaced with the URL of the `public` folder during the build.
-      Only files inside the `public` folder can be referenced from the HTML.
-
-      Unlike "/favicon.ico" or "favicon.ico", "%PUBLIC_URL%/favicon.ico" will
-      work correctly both with client-side routing and a non-root public URL.
-      Learn how to configure a non-root public URL by running `npm run build`.
-    -->
-    <title>React App</title>
+    
+    <!-- Preconnect to external domains for performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    
+    <!-- DNS Prefetch for better performance -->
+    <link rel="dns-prefetch" href="//trackmania.io" />
+    <link rel="dns-prefetch" href="//api.trackmania.com" />
+    
+    <!-- Structured Data - JSON-LD -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "Trackmania COTD Analyzer",
+      "description": "Modern web application for analyzing your Trackmania Cup of the Day performance. Track rankings, visualize progress, and discover patterns in your racing data.",
+      "url": "https://cotdanalyzer.com/",
+      "applicationCategory": "GameApplication",
+      "operatingSystem": "Web Browser",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "author": {
+        "@type": "Organization",
+        "name": "Trackmania COTD Analyzer Team"
+      },
+      "screenshot": "https://cotdanalyzer.com/screenshot-wide.png",
+      "softwareVersion": "2.0.0",
+      "datePublished": "2024-01-01",
+      "dateModified": "2025-01-08",
+      "inLanguage": ["en", "de"],
+      "isAccessibleForFree": true,
+      "browserRequirements": "Requires JavaScript. Requires HTML5.",
+      "permissions": "No special permissions required",
+      "storageRequirements": "Local storage only, no server required"
+    }
+    </script>
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
