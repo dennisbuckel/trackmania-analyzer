@@ -50,7 +50,7 @@ const DataImport = ({ pasteAreaContent, setPasteAreaContent, onDataParsed }) => 
     }
   };
 
-  // Handle sample data
+  // Handle sample data - only load into paste area, don't process automatically
   const loadSampleData = () => {
     const sampleData = `COTD 2025-03-04 #1
 18 hours ago
@@ -66,7 +66,73 @@ COTD 2025-03-01 #1
 RALLY DOINKS² 8 38th / 52 486th / 1839 (top 26.43%) 454th / 1839 (top 24.69%) 
 COTD 2025-02-28 #1
 5 days ago
-SKY DUST 11 4th / 52 644th / 2072 (top 31.08%) 682nd / 2072 (top 32.92%)`;
+SKY DUST 11 4th / 52 644th / 2072 (top 31.08%) 682nd / 2072 (top 32.92%)
+COTD 2025-02-27 #1
+6 days ago
+Midnight Express 7 12th / 48 398th / 2156 (top 18.46%) 421st / 2156 (top 19.53%)
+COTD 2025-02-26 #1
+7 days ago
+Crystal Cave 13 8th / 51 789th / 2334 (top 33.81%) 812nd / 2334 (top 34.79%)
+COTD 2025-02-25 #1
+8 days ago
+Neon Highway 6 22nd / 49 334th / 2567 (top 13.01%) 356th / 2567 (top 13.87%)
+COTD 2025-02-24 #1
+9 days ago
+Desert Storm 15 3rd / 47 891st / 2198 (top 40.54%) 923rd / 2198 (top 42.00%)
+COTD 2025-02-23 #1
+10 days ago
+Arctic Blast 10 18th / 53 598th / 2445 (top 24.46%) 634th / 2445 (top 25.93%)
+COTD 2025-02-22 #1
+11 days ago
+Volcano Rush 14 6th / 44 834th / 2289 (top 36.44%) 867th / 2289 (top 37.88%)
+COTD 2025-02-21 #1
+12 days ago
+Ocean Drift 9 31st / 50 549th / 2378 (top 23.09%) 567th / 2378 (top 23.85%)
+COTD 2025-02-20 #1
+13 days ago
+Mountain Peak 12 15th / 46 718th / 2156 (top 33.30%) 745th / 2156 (top 34.55%)
+COTD 2025-02-19 #1
+14 days ago
+City Lights 8 27th / 52 486th / 2234 (top 21.75%) 498th / 2234 (top 22.29%)
+COTD 2025-02-18 #1
+15 days ago
+Forest Trail 11 9th / 48 644th / 2367 (top 27.20%) 672nd / 2367 (top 28.39%)
+COTD 2025-02-17 #1
+16 days ago
+Space Station 16 4th / 45 968th / 2445 (top 39.59%) 1012th / 2445 (top 41.39%)
+COTD 2025-02-16 #1
+17 days ago
+Thunder Valley 7 19th / 51 408th / 2189 (top 18.64%) 432nd / 2189 (top 19.73%)
+COTD 2025-02-15 #1
+18 days ago
+Ice Palace 13 11th / 49 807th / 2298 (top 35.12%) 834th / 2298 (top 36.29%)
+COTD 2025-02-14 #1
+19 days ago
+Sunset Beach 5 28th / 47 279th / 2456 (top 11.36%) 298th / 2456 (top 12.13%)
+COTD 2025-02-13 #1
+20 days ago
+Steel Factory 17 7th / 44 1057th / 2367 (top 44.65%) 1089th / 2367 (top 46.00%)
+COTD 2025-02-12 #1
+21 days ago
+Rainbow Road 9 23rd / 53 531st / 2234 (top 23.77%) 548th / 2234 (top 24.53%)
+COTD 2025-02-11 #1
+22 days ago
+Cyber Circuit 14 13th / 48 850th / 2189 (top 38.84%) 876th / 2189 (top 40.02%)
+COTD 2025-02-10 #1
+23 days ago
+Golden Temple 6 33rd / 50 351st / 2298 (top 15.27%) 367th / 2298 (top 15.97%)
+COTD 2025-02-09 #1
+24 days ago
+Wind Tunnel 12 20th / 46 726th / 2456 (top 29.56%) 751st / 2456 (top 30.58%)
+COTD 2025-02-08 #1
+25 days ago
+Lava Flow 10 14th / 52 610th / 2367 (top 25.76%) 634th / 2367 (top 26.78%)
+COTD 2025-02-07 #1
+26 days ago
+Crystal Maze 8 25th / 49 498th / 2234 (top 22.29%) 512th / 2234 (top 22.92%)
+COTD 2025-02-06 #1
+27 days ago
+Neon Dreams 15 5th / 47 902nd / 2189 (top 41.21%) 934th / 2189 (top 42.67%)`;
     
     setPasteAreaContent(sampleData);
   };
