@@ -4,7 +4,7 @@
 
 /* CSS Custom Properties for Theme System */
 :root {
-  /* Default theme colors - will be overridden by ThemeProvider */
+  /* Default light theme colors - will be overridden by ThemeProvider */
   --color-primary: #3b82f6;
   --color-primaryHover: #2563eb;
   --color-secondary: #6b7280;
@@ -40,6 +40,47 @@
   --color-gradientFrom: #3b82f6;
   --color-gradientTo: #8b5cf6;
   --color-backgroundGradient: linear-gradient(135deg, #f0f9ff 0%, #e0e7ff 100%);
+}
+
+/* Dark theme colors for users who prefer dark mode */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-primary: #60a5fa;
+    --color-primaryHover: #3b82f6;
+    --color-secondary: #9ca3af;
+    --color-secondaryHover: #6b7280;
+    --color-accent: #a78bfa;
+    --color-accentHover: #8b5cf6;
+    --color-success: #34d399;
+    --color-successHover: #10b981;
+    --color-warning: #fbbf24;
+    --color-warningHover: #f59e0b;
+    --color-danger: #f87171;
+    --color-dangerHover: #ef4444;
+    --color-info: #22d3ee;
+    --color-infoHover: #06b6d4;
+    
+    --color-background: #0f172a;
+    --color-backgroundSecondary: #1e293b;
+    --color-surface: #334155;
+    --color-surfaceHover: #475569;
+    
+    --color-textPrimary: #f8fafc;
+    --color-textSecondary: #e2e8f0;
+    --color-textMuted: #cbd5e1;
+    --color-textInverse: #0f172a;
+    
+    --color-border: #64748b;
+    --color-borderHover: #94a3b8;
+    
+    --color-glass: rgba(51, 65, 85, 0.9);
+    --color-glassHover: rgba(71, 85, 105, 0.95);
+    --color-glassBorder: rgba(96, 165, 250, 0.3);
+    
+    --color-gradientFrom: #60a5fa;
+    --color-gradientTo: #a78bfa;
+    --color-backgroundGradient: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  }
 }
 
 /* Theme-aware body styles */

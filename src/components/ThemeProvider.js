@@ -106,31 +106,64 @@ export const useTheme = () => {
 };
 
 export const ThemeProvider = ({ children }) => {
-  const [currentTheme, setCurrentTheme] = useState('default');
-  const [isDarkMode, setIsDarkMode] = useState(false);
-
-  // Load theme from localStorage on mount
-  useEffect(() => {
-    const savedTheme = localStorage.getItem('trackmania-theme');
-    const savedDarkMode = localStorage.getItem('trackmania-dark-mode') === 'true';
-    
-    if (savedTheme && themes[savedTheme]) {
-      setCurrentTheme(savedTheme);
-    }
-    
-    setIsDarkMode(savedDarkMode);
-    
-    // Check system preference if no saved preference
-    if (!localStorage.getItem('trackmania-dark-mode')) {
-      try {
-        const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-        setIsDarkMode(prefersDark || false);
-      } catch (error) {
-        // Fallback for test environments
-        setIsDarkMode(false);
+  // Initialize theme synchronously to prevent FOUC
+  const getInitialTheme = () => {
+    try {
+      const savedTheme = localStorage.getItem('trackmania-theme');
+      const savedDarkMode = localStorage.getItem('trackmania-dark-mode') === 'true';
+      
+      if (savedTheme && themes[savedTheme]) {
+        return { theme: savedTheme, darkMode: savedDarkMode };
       }
+      
+      // Check system preference if no saved preference
+      if (!localStorage.getItem('trackmania-dark-mode')) {
+        const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        return { 
+          theme: prefersDark ? 'darkDefault' : 'default', 
+          darkMode: prefersDark 
+        };
+      }
+      
+      return { theme: 'default', darkMode: savedDarkMode };
+    } catch (error) {
+      // Fallback for test environments or localStorage issues
+      return { theme: 'default', darkMode: false };
     }
-  }, []);
+  };
+
+  const initialState = getInitialTheme();
+  const [currentTheme, setCurrentTheme] = useState(initialState.theme);
+  const [isDarkMode, setIsDarkMode] = useState(initialState.darkMode);
+
+  // Apply theme immediately on mount to prevent FOUC
+  useEffect(() => {
+    const applyThemeImmediately = () => {
+      const theme = themes[currentTheme];
+      if (!theme) return;
+
+      const root = document.documentElement;
+      
+      // Apply all color variables immediately
+      Object.entries(theme.colors).forEach(([key, value]) => {
+        root.style.setProperty(`--color-${key}`, value);
+      });
+      
+      // Apply theme class to body immediately
+      document.body.className = document.body.className.replace(/theme-\w+/g, '');
+      document.body.classList.add(`theme-${currentTheme}`);
+      
+      // Apply dark/light mode class immediately
+      if (theme.mode === 'dark' || isDarkMode) {
+        document.body.classList.add('dark-mode');
+      } else {
+        document.body.classList.remove('dark-mode');
+      }
+    };
+
+    // Apply theme synchronously
+    applyThemeImmediately();
+  }, []); // Empty dependency array - only run once on mount
 
   // Apply theme to CSS custom properties
   useEffect(() => {
