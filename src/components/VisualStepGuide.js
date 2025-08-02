@@ -1,4 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import tutorial1Image from '../assets/tutorial1-searchname.jpg';
+import tutorial2GotoCotdImage from '../assets/tutorial2-gotocotd.jpg';
+import tutorial2CopyDataImage from '../assets/tutorial2-copydata.jpg';
 
 const VisualStepGuide = ({ isVisible, onComplete }) => {
   const [currentStep, setCurrentStep] = useState(0);
@@ -40,11 +43,11 @@ const VisualStepGuide = ({ isVisible, onComplete }) => {
         <div className="space-y-4">
           <div className="bg-white rounded-lg border-2 border-gray-200 overflow-hidden shadow-lg hover:shadow-xl transition-shadow">
             <img 
-              src={`${process.env.PUBLIC_URL}/tutorial1-searchname.jpg`} 
+              src={tutorial1Image} 
               alt="Step 1: Search your profile on trackmania.io" 
               className="w-full h-56 object-contain bg-gray-50 hover:scale-105 transition-transform duration-300 cursor-pointer"
               loading="lazy"
-              onClick={() => window.open(`${process.env.PUBLIC_URL}/tutorial1-searchname.jpg`, '_blank')}
+              onClick={() => window.open(tutorial1Image, '_blank')}
             />
           </div>
           <div className="flex justify-center">
@@ -70,11 +73,11 @@ const VisualStepGuide = ({ isVisible, onComplete }) => {
         <div className="space-y-4">
           <div className="bg-white rounded-lg border-2 border-gray-200 overflow-hidden shadow-lg hover:shadow-xl transition-shadow">
             <img 
-              src={`${process.env.PUBLIC_URL}/tutorial2-gotocotd.jpg`} 
+              src={tutorial2GotoCotdImage} 
               alt="Step 2: Click on Cup of the Day in your profile" 
               className="w-full h-56 object-contain bg-gray-50 hover:scale-105 transition-transform duration-300 cursor-pointer"
               loading="lazy"
-              onClick={() => window.open(`${process.env.PUBLIC_URL}/tutorial2-gotocotd.jpg`, '_blank')}
+              onClick={() => window.open(tutorial2GotoCotdImage, '_blank')}
             />
           </div>
           <div className="flex justify-center">
@@ -95,11 +98,11 @@ const VisualStepGuide = ({ isVisible, onComplete }) => {
         <div className="space-y-4">
           <div className="bg-white rounded-lg border-2 border-gray-200 overflow-hidden shadow-lg hover:shadow-xl transition-shadow">
             <img 
-              src={`${process.env.PUBLIC_URL}/tutorial2-copydata.jpg`} 
+              src={tutorial2CopyDataImage} 
               alt="Step 3: Select and copy the complete COTD table" 
               className="w-full h-56 object-contain bg-gray-50 hover:scale-105 transition-transform duration-300 cursor-pointer"
               loading="lazy"
-              onClick={() => window.open(`${process.env.PUBLIC_URL}/tutorial2-copydata.jpg`, '_blank')}
+              onClick={() => window.open(tutorial2CopyDataImage, '_blank')}
             />
           </div>
           <div className="flex justify-center">
