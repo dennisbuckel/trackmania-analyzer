@@ -4,6 +4,11 @@
 // learn more: https://github.com/testing-library/jest-dom
 import '@testing-library/jest-dom';
 
+// Mock @vercel/analytics/react before any imports
+jest.mock('@vercel/analytics/react', () => ({
+  Analytics: () => null,
+}), { virtual: true });
+
 // Mock window.matchMedia for tests
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
