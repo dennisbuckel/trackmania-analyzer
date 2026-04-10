@@ -1,24 +1,39 @@
 # Trackmania COTD Analyzer - Robots.txt
 # https://www.robotstxt.org/robotstxt.html
 
+# IMPORTANT: Allow all crawlers full access including CSS/JS
+# Google needs CSS & JS to properly render Single Page Applications (React)
 User-agent: *
 Allow: /
-Disallow: /static/
-Disallow: /*.json$
 Disallow: /dataexamples/
 
-# Sitemap location
+# Sitemap location (critical for SEO indexing)
 Sitemap: https://cotdanalyzer.com/sitemap.xml
 
-# Crawl-delay for respectful crawling
-Crawl-delay: 1
-
-# Allow specific search engines
+# Google-specific: ensure full rendering
 User-agent: Googlebot
 Allow: /
+Allow: /static/
+Allow: /static/js/
+Allow: /static/css/
+Allow: /manifest.json
 
+# Bing
 User-agent: Bingbot
 Allow: /
 
+# Yahoo
 User-agent: Slurp
+Allow: /
+
+# Yandex
+User-agent: Yandex
+Allow: /
+
+# DuckDuckGo
+User-agent: DuckDuckBot
+Allow: /
+
+# Baidu
+User-agent: Baiduspider
 Allow: /

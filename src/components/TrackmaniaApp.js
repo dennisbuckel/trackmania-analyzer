@@ -1,33 +1,58 @@
 // src/TrackmaniaApp.js
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import DataImportRevolutionary from './DataImportRevolutionary';
+import PlayerLookup from './PlayerLookup';
 import StatsOverviewRevolutionary from './StatsOverviewRevolutionary';
 import ChartsSection from './ChartsSection';
 import ResultsTable from './ResultsTable';
 import VisualStepGuide from './VisualStepGuide';
 import ThemeSelector from './ThemeSelector';
+import KeyboardShortcuts from './KeyboardShortcuts';
 import parseTrackmaniaIoData from '../utils/parseTrackmaniaIoData';
 import { getTranslation } from '../i18n/translations';
+import { useToast } from './Toast';
+import { useConfirm } from './ConfirmModal';
+import appLogo from '../assets/logo.png';
 
 const TrackmaniaApp = () => {
   const [playerData, setPlayerData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   const [isDataLoaded, setIsDataLoaded] = useState(false);
   const [pasteAreaContent, setPasteAreaContent] = useState('');
+  const [viewTransition, setViewTransition] = useState(false);
   
   // View state
   const [activeView, setActiveView] = useState('performance');
   const [timeRange, setTimeRange] = useState('all');
-  const [showInfo, setShowInfo] = useState(false);
   
   // UX Enhancement states
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
   const [isFirstTime, setIsFirstTime] = useState(true);
   
+  // Import mode: 'auto' (player lookup) or 'manual' (paste data)
+  const [importMode, setImportMode] = useState('auto');
+
+  // Sticky header state
+  const [isScrolled, setIsScrolled] = useState(false);
+  const headerRef = useRef(null);
+  
+  // Toast & Confirm hooks
+  const toast = useToast();
+  const confirm = useConfirm();
+  
   // Language is now fixed to English
   const currentLanguage = 'en';
   const t = (key, params = {}) => getTranslation(key, currentLanguage, params);
+
+  // Scroll detection for sticky header
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 60);
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
   
   // Load data on first render
   useEffect(() => {
@@ -44,6 +69,7 @@ const TrackmaniaApp = () => {
           setIsFirstTime(false);
         }
       } catch (error) {
+        // ignore parse errors
       }
     }
     
@@ -53,66 +79,102 @@ const TrackmaniaApp = () => {
     }
   }, []);
 
-  // Data processing callback - Revolutionary approach
-  const handleDataParsing = (textData, parsedResults = null) => {
+  // Smooth view transitions
+  const transitionToView = (loaded) => {
+    setViewTransition(true);
+    setTimeout(() => {
+      setIsDataLoaded(loaded);
+      setTimeout(() => setViewTransition(false), 50);
+    }, 200);
+  };
+
+  // Data processing callback
+  const handleDataParsing = async (textData, parsedResults = null) => {
     try {
-      // If parsed results were already passed (from the revolutionary component)
       let parsedData;
       if (parsedResults) {
         parsedData = parsedResults;
       } else {
-        // Fallback: Use the revolutionary parser
         const result = parseTrackmaniaIoData(textData);
         parsedData = result.results;
       }
 
       if (parsedData.length > 0) {
-        const isAppending = playerData.length > 0 && window.confirm(
-          '🔄 Do you want to add the new data to your existing data? (Cancel = Replace all)'
-        );
-        
         let newData;
-        if (isAppending) {
-          const existingDates = new Set(playerData.map(item => item.date));
-          const uniqueNewData = parsedData.filter(item => !existingDates.has(item.date));
-          newData = [...playerData, ...uniqueNewData].sort((a, b) => new Date(b.date) - new Date(a.date));
+        
+        if (playerData.length > 0) {
+          const shouldAppend = await confirm({
+            title: 'Merge or Replace Data?',
+            message: 'You already have existing data. Would you like to merge the new data with your existing entries, or replace everything?',
+            confirmLabel: 'Merge Data',
+            cancelLabel: 'Replace All',
+            variant: 'info',
+          });
           
-          // Show statistics about added data
-          if (uniqueNewData.length > 0) {
-            alert(`✅ ${uniqueNewData.length} new entries added! (${parsedData.length - uniqueNewData.length} duplicates skipped)`);
+          if (shouldAppend) {
+            const existingDates = new Set(playerData.map(item => item.date));
+            const uniqueNewData = parsedData.filter(item => !existingDates.has(item.date));
+            newData = [...playerData, ...uniqueNewData].sort((a, b) => new Date(b.date) - new Date(a.date));
+            
+            if (uniqueNewData.length > 0) {
+              toast.success(`${uniqueNewData.length} new entries added! (${parsedData.length - uniqueNewData.length} duplicates skipped)`, {
+                title: 'Data Merged Successfully',
+              });
+            } else {
+              toast.info('All data was already present. No new entries added.', {
+                title: 'No New Data',
+              });
+            }
           } else {
-            alert('ℹ️ All data was already present. No new entries added.');
+            newData = parsedData;
+            toast.success(`${parsedData.length} entries successfully imported!`, {
+              title: 'Data Replaced',
+            });
           }
         } else {
           newData = parsedData;
-          alert(`✅ ${parsedData.length} entries successfully imported!`);
+          toast.success(`${parsedData.length} entries successfully imported!`, {
+            title: 'Import Complete',
+          });
         }
         
         setPlayerData(newData);
         setFilteredData(newData);
-        setIsDataLoaded(true);
+        transitionToView(true);
         localStorage.setItem('trackmaniaData', JSON.stringify(newData));
         setPasteAreaContent('');
         
-        // Show success notification
         if (isFirstTime) {
           setIsFirstTime(false);
         }
       } else {
-        alert('❌ No valid data found. Please check the format.');
+        toast.error('No valid data found. Please check the format and try again.', {
+          title: 'Import Failed',
+        });
       }
     } catch (err) {
-      alert(`❌ Error processing data: ${err.message}`);
+      toast.error(`Error processing data: ${err.message}`, {
+        title: 'Processing Error',
+      });
     }
   };
 
-  const clearAllData = () => {
-    if (window.confirm(t('confirmDelete'))) {
+  const clearAllData = async () => {
+    const confirmed = await confirm({
+      title: 'Delete All Data?',
+      message: 'This will permanently remove all your COTD data from this browser. This action cannot be undone.',
+      confirmLabel: 'Delete Everything',
+      cancelLabel: 'Keep Data',
+      variant: 'danger',
+    });
+    
+    if (confirmed) {
       localStorage.removeItem('trackmaniaData');
       setPlayerData([]);
       setFilteredData([]);
-      setIsDataLoaded(false);
+      transitionToView(false);
       setPasteAreaContent('');
+      toast.success('All data has been deleted.', { title: 'Data Cleared' });
     }
   };
   
@@ -125,7 +187,7 @@ const TrackmaniaApp = () => {
 
   const exportData = () => {
     if (playerData.length === 0) {
-      alert(t('noDataToExport'));
+      toast.warning('No data available to export.', { title: 'Export' });
       return;
     }
     
@@ -139,13 +201,14 @@ const TrackmaniaApp = () => {
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+    toast.success(`Exported ${playerData.length} entries as JSON.`, { title: 'Export Complete' });
   };
 
   // Quick Actions handler
   const handleQuickAction = (actionId) => {
     switch (actionId) {
       case 'add-data':
-        setIsDataLoaded(false);
+        transitionToView(false);
         break;
       case 'export-data':
         exportData();
@@ -162,18 +225,18 @@ const TrackmaniaApp = () => {
         setActiveView('division');
         break;
       case 'share-stats':
-        if (navigator.share && playerData.length > 0) {
+        if (playerData.length > 0) {
           const stats = `My COTD Stats: ${playerData.length} races, Avg Division ${(playerData.reduce((sum, item) => sum + (item.division || 10), 0) / playerData.length).toFixed(1)}`;
-          navigator.share({
-            title: 'Trackmania COTD Stats',
-            text: stats,
-            url: window.location.href
-          });
-        } else {
-          // Fallback: copy to clipboard
-          const stats = `My COTD Stats: ${playerData.length} races, Avg Division ${(playerData.reduce((sum, item) => sum + (item.division || 10), 0) / playerData.length).toFixed(1)}`;
-          navigator.clipboard.writeText(stats);
-          alert(t('statsCopied'));
+          if (navigator.share) {
+            navigator.share({
+              title: 'Trackmania COTD Stats',
+              text: stats,
+              url: window.location.href
+            });
+          } else {
+            navigator.clipboard.writeText(stats);
+            toast.success('Statistics copied to clipboard!', { title: 'Copied' });
+          }
         }
         break;
       default:
@@ -188,7 +251,7 @@ const TrackmaniaApp = () => {
         setShowAdvancedSearch(true);
         break;
       case 'add-data':
-        setIsDataLoaded(false);
+        transitionToView(false);
         break;
       case 'export-data':
         exportData();
@@ -204,14 +267,15 @@ const TrackmaniaApp = () => {
         setShowOnboarding(false);
         break;
       case 'refresh-data':
-        // Reload data from localStorage
         const savedData = localStorage.getItem('trackmaniaData');
         if (savedData) {
           try {
             const parsed = JSON.parse(savedData);
             setPlayerData(parsed);
             setFilteredData(parsed);
+            toast.info('Data refreshed from local storage.', { title: 'Refreshed' });
           } catch (error) {
+            // ignore
           }
         }
         break;
@@ -220,10 +284,57 @@ const TrackmaniaApp = () => {
     }
   };
 
-  // Advanced Search handler
-  const handleAdvancedFilter = (filtered) => {
-    setFilteredData(filtered);
-    setShowAdvancedSearch(false);
+  // Handle auto-fetched data from PlayerLookup
+  const handleAutoFetchData = async (convertedData, playerName) => {
+    if (!convertedData || convertedData.length === 0) {
+      toast.error('No valid data received from the API.', { title: 'Fetch Failed' });
+      return;
+    }
+
+    let newData;
+    
+    if (playerData.length > 0) {
+      const shouldAppend = await confirm({
+        title: 'Merge or Replace Data?',
+        message: `You already have ${playerData.length} entries. Merge ${convertedData.length} new entries from ${playerName || 'player'}, or replace everything?`,
+        confirmLabel: 'Merge Data',
+        cancelLabel: 'Replace All',
+        variant: 'info',
+      });
+
+      if (shouldAppend) {
+        const existingDates = new Set(playerData.map(item => item.date));
+        const uniqueNewData = convertedData.filter(item => !existingDates.has(item.date));
+        newData = [...playerData, ...uniqueNewData].sort((a, b) => new Date(b.date) - new Date(a.date));
+
+        if (uniqueNewData.length > 0) {
+          toast.success(`${uniqueNewData.length} new entries added for ${playerName || 'player'}! (${convertedData.length - uniqueNewData.length} duplicates skipped)`, {
+            title: 'Data Merged',
+          });
+        } else {
+          toast.info('All data was already present. No new entries added.', { title: 'No New Data' });
+        }
+      } else {
+        newData = convertedData;
+        toast.success(`${convertedData.length} entries imported for ${playerName || 'player'}!`, {
+          title: 'Data Replaced',
+        });
+      }
+    } else {
+      newData = convertedData;
+      toast.success(`${convertedData.length} entries imported for ${playerName || 'player'}!`, {
+        title: 'Import Complete 🎉',
+      });
+    }
+
+    setPlayerData(newData);
+    setFilteredData(newData);
+    transitionToView(true);
+    localStorage.setItem('trackmaniaData', JSON.stringify(newData));
+
+    if (isFirstTime) {
+      setIsFirstTime(false);
+    }
   };
 
   // Onboarding completion
@@ -232,9 +343,8 @@ const TrackmaniaApp = () => {
     localStorage.setItem('cotd-onboarding-seen', 'true');
   };
 
-  // Load sample data function - only load into paste area, don't process automatically
+  // Load sample data function
   const loadSampleData = () => {
-    // Sample data from the dataexample file
     const sampleDataText = `Cup of the Day	Map	Division	Division Rank	Rank	Qualification
 COTD 2025-07-26 #1
 
@@ -315,310 +425,287 @@ COTD 2025-05-26 #1
 Porcelain	
 12
 6th / 46
-710th / 3176 (top 22.36%)	745th / 3176 (top 23.46%)
-COTD 2025-05-22 #1
-
-2 months ago
-
-Nature's Flow	
-14
-24th / 42
-856th / 2937 (top 29.15%)	880th / 2937 (top 29.96%)
-COTD 2025-05-21 #1
-
-2 months ago
-
-Castles in the Sand	
-11
-37th / 48
-677th / 2847 (top 23.78%)	665th / 2847 (top 23.36%)
-COTD 2025-05-19 #1
-
-2 months ago
-
-Before	
-10
-15th / 43
-591st / 3041 (top 19.43%)	598th / 3041 (top 19.66%)
-COTD 2025-05-18 #1
-
-2 months ago
-
-Brush Tech	
-10
-13th / 51
-589th / 2974 (top 19.80%)	594th / 2974 (top 19.97%)
-COTD 2025-05-17 #1
-
-2 months ago
-
-Fraction ft' djabski	
-15
-2nd / 52
-898th / 2462 (top 36.47%)	956th / 2462 (top 38.83%)
-COTD 2025-05-16 #1
-
-2 months ago
-
-Icarus Ascent ft Tailgrab	
-14
-22nd / 54
-854th / 2485 (top 34.37%)	835th / 2485 (top 33.60%)
-COTD 2025-05-15 #1
-
-2 months ago
-
-toffee ft' sqlc	
-8
-28th / 43
-476th / 2809 (top 16.95%)	469th / 2809 (top 16.70%)
-COTD 2025-05-12 #1
-
-2 months ago
-
-Castral Roc ft' Svendsenz	
-19
-1st / 45
-1,153rd / 2830 (top 40.74%)	1,198th / 2830 (top 42.33%)
-COTD 2025-05-11 #1
-
-3 months ago
-
-Summer's End	
-9
-36th / 46
-548th / 2927 (top 18.72%)	513th / 2927 (top 17.53%)
-COTD 2025-05-06 #1
-
-3 months ago
-
-MetBiDuoDi Ft Oclavukixus	
-16
-14th / 52
-974th / 3130 (top 31.12%)	975th / 3130 (top 31.15%)
-COTD 2025-05-05 #1
-
-3 months ago
-
-PIORITE	
-11
-24th / 50
-664th / 2937 (top 22.61%)	671st / 2937 (top 22.85%)
-COTD 2025-05-04 #1
-
-3 months ago
-
-Nothing Back the Way We Came	
-5
-23rd / 53
-279th / 3102 (top 8.99%)	299th / 3102 (top 9.64%)
-COTD 2025-05-03 #1
-
-3 months ago
-
-ネコトピア - Nekotopia	
-18
-38th / 49
-1,126th / 2473 (top 45.53%)	1,150th / 2473 (top 46.50%)
-COTD 2025-05-02 #1
-
-3 months ago
-
-Sunrise, Parabellum	
-13
-21st / 46
-789th / 2477 (top 31.85%)	820th / 2477 (top 33.10%)
-COTD 2025-05-01 #1
-
-3 months ago
-
-BackwΛՐds	
-21
-48th / 52
-1,328th / 3168 (top 41.92%)	1,306th / 3168 (top 41.22%)
-COTD 2025-04-30 #1
-
-3 months ago
-
-Caught ft Cotton	
-8
-21st / 54
-469th / 2490 (top 18.84%)	469th / 2490 (top 18.84%)
-COTD 2025-04-29 #1
-
-3 months ago
-
-2v2 Save Me	
-6
-18th / 53
-338th / 2678 (top 12.62%)	361st / 2678 (top 13.48%)`;
+710th / 3176 (top 22.36%)	745th / 3176 (top 23.46%)`;
     
-    // Load data into paste area
     setPasteAreaContent(sampleDataText);
+    toast.info('Sample data loaded into the paste area. Click "Process Data" to import.', { title: 'Sample Data Ready' });
   };
 
-  // Get display data (filtered or original)
+  // Get display data
   const displayData = filteredData.length > 0 ? filteredData : playerData;
 
-  return (
-    <div className="p-4 min-h-screen relative" style={{ background: 'var(--color-backgroundGradient)' }}>
-      <div className="max-w-6xl mx-auto">
-        {/* Theme Selector - Fixed position */}
-        <div className="fixed top-4 right-4 z-50 no-print">
-          <ThemeSelector />
-        </div>
+  // Chart view configuration
+  const chartViews = [
+    { id: 'performance', label: 'Performance', icon: '📈', desc: 'Top % over time' },
+    { id: 'division', label: 'Divisions', icon: '🏆', desc: 'Distribution' },
+    { id: 'divisionProgress', label: 'Progress', icon: '📊', desc: 'Division trend' },
+    { id: 'divisionRank', label: 'Div. Rank', icon: '🎯', desc: 'Position in div' },
+    { id: 'totalPlayers', label: 'Players', icon: '👥', desc: 'Lobby sizes' },
+  ];
 
-        <header className="mb-6 text-center animate-fade-in-up">
-          <h1 className="text-4xl font-bold mb-2 text-shadow" style={{ 
-            background: `linear-gradient(to right, var(--color-gradientFrom), var(--color-gradientTo))`,
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text'
-          }}>
-            {t('title')}
-          </h1>
-          <p className="text-lg" style={{ color: 'var(--color-textSecondary)' }}>{t('subtitle')}</p>
-          
-          {/* Quick Stats Bar */}
-          {isDataLoaded && (
-            <div className="mt-4 flex justify-center space-x-6 text-sm animate-slide-in-right">
-              <div className="px-3 py-1 rounded-full hover-lift" style={{ 
-                background: 'var(--color-glass)', 
-                backdropFilter: 'blur(10px)',
-                color: 'var(--color-textPrimary)'
-              }}>
-                <span className="font-medium">{displayData.length}</span> {t('races')}
-              </div>
-              <div className="px-3 py-1 rounded-full hover-lift" style={{ 
-                background: 'var(--color-glass)', 
-                backdropFilter: 'blur(10px)',
-                color: 'var(--color-textPrimary)'
-              }}>
-                {t('avgDivision')} <span className="font-medium">
-                  {displayData.length > 0 ? (displayData.reduce((sum, item) => sum + (item.division || 10), 0) / displayData.length).toFixed(1) : 'N/A'}
-                </span>
-              </div>
-              {filteredData.length !== playerData.length && (
-                <div className="px-3 py-1 rounded-full animate-pulse-slow" style={{
-                  backgroundColor: 'var(--color-info)',
-                  color: 'var(--color-textInverse)'
-                }}>
-                  {t('filtered')}: {filteredData.length}/{playerData.length}
-                </div>
+  return (
+    <div className="min-h-screen relative" style={{ background: 'var(--color-backgroundGradient)' }}>
+      
+      {/* Keyboard Shortcuts - always active */}
+      <KeyboardShortcuts onAction={handleKeyboardAction} />
+
+      {/* Sticky Header */}
+      <header
+        ref={headerRef}
+        className={`sticky top-0 z-40 transition-all duration-300 no-print ${
+          isScrolled 
+            ? 'py-2 shadow-lg' 
+            : 'py-4'
+        }`}
+        style={{
+          backgroundColor: isScrolled ? 'var(--color-glass)' : 'transparent',
+          backdropFilter: isScrolled ? 'blur(20px)' : 'none',
+          borderBottom: isScrolled ? '1px solid var(--color-glassBorder)' : 'none',
+        }}
+      >
+        <div className="max-w-6xl mx-auto px-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <img 
+              src={appLogo} 
+              alt="COTD Analyzer" 
+              className={`transition-all duration-300 ${isScrolled ? 'w-8 h-8' : 'w-10 h-10'}`}
+              style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))' }}
+            />
+            <div>
+              <h1
+                className={`font-bold transition-all duration-300 ${isScrolled ? 'text-lg' : 'text-3xl'}`}
+                style={{
+                  background: `linear-gradient(to right, var(--color-gradientFrom), var(--color-gradientTo))`,
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  backgroundClip: 'text',
+                }}
+              >
+                {t('title')}
+              </h1>
+              {!isScrolled && (
+                <p className="text-sm mt-0.5" style={{ color: 'var(--color-textSecondary)' }}>
+                  {t('subtitle')}
+                </p>
               )}
             </div>
-          )}
-        </header>
+          </div>
+
+          <div className="flex items-center gap-3">
+            {/* Quick Stats in Header (when scrolled & data loaded) */}
+            {isScrolled && isDataLoaded && (
+              <div className="hidden md:flex items-center gap-3 mr-2">
+                <div className="px-3 py-1 rounded-full text-xs font-medium" style={{
+                  background: 'var(--color-glass)',
+                  color: 'var(--color-textPrimary)',
+                  border: '1px solid var(--color-glassBorder)',
+                }}>
+                  <span className="font-bold">{displayData.length}</span> races
+                </div>
+                <div className="px-3 py-1 rounded-full text-xs font-medium" style={{
+                  background: 'var(--color-glass)',
+                  color: 'var(--color-textPrimary)',
+                  border: '1px solid var(--color-glassBorder)',
+                }}>
+                  Avg Div <span className="font-bold">
+                    {displayData.length > 0 ? (displayData.reduce((sum, item) => sum + (item.division || 10), 0) / displayData.length).toFixed(1) : 'N/A'}
+                  </span>
+                </div>
+              </div>
+            )}
+            <ThemeSelector />
+          </div>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <main className={`max-w-6xl mx-auto px-4 pb-8 transition-all duration-300 ${viewTransition ? 'opacity-0 translate-y-4' : 'opacity-100 translate-y-0'}`}>
+        
+        {/* Quick Stats Bar - below header when not scrolled */}
+        {isDataLoaded && !isScrolled && (
+          <div className="flex justify-center gap-4 mb-6 animate-fade-in-up">
+            <div className="px-4 py-2 rounded-full text-sm font-medium hover-lift" style={{
+              background: 'var(--color-glass)',
+              backdropFilter: 'blur(10px)',
+              color: 'var(--color-textPrimary)',
+              border: '1px solid var(--color-glassBorder)',
+            }}>
+              <span className="font-bold">{displayData.length}</span> {t('races')}
+            </div>
+            <div className="px-4 py-2 rounded-full text-sm font-medium hover-lift" style={{
+              background: 'var(--color-glass)',
+              backdropFilter: 'blur(10px)',
+              color: 'var(--color-textPrimary)',
+              border: '1px solid var(--color-glassBorder)',
+            }}>
+              {t('avgDivision')} <span className="font-bold">
+                {displayData.length > 0 ? (displayData.reduce((sum, item) => sum + (item.division || 10), 0) / displayData.length).toFixed(1) : 'N/A'}
+              </span>
+            </div>
+            {filteredData.length !== playerData.length && (
+              <div className="px-4 py-2 rounded-full text-sm font-medium" style={{
+                backgroundColor: 'var(--color-info)',
+                color: 'var(--color-textInverse)',
+              }}>
+                {t('filtered')}: {filteredData.length}/{playerData.length}
+              </div>
+            )}
+          </div>
+        )}
 
         {!isDataLoaded ? (
-          <>
-            <div className="card-glass p-6 mb-4 data-import-area animate-fade-in-up">
-              <div className="flex justify-between items-start mb-6">
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="text-3xl">🏁</div>
-                    <h2 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                      {t('welcomeTitle')}
-                    </h2>
-                  </div>
-                  <p className="text-lg text-gray-600 leading-relaxed mb-4">
-                    Import your Trackmania COTD data and get detailed performance analysis. Copy your results from the game or{' '}
-                    <a 
-                      href="https://trackmania.io/#/players" 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="text-blue-600 hover:text-blue-800 underline font-medium"
-                    >
-                      trackmania.io
-                    </a>
-                    {' '}and paste them below.
-                  </p>
-                  <div className="flex gap-3">
-                    <button 
-                      onClick={() => setShowOnboarding(true)} 
-                      className="btn-info flex items-center gap-2 px-6 py-3 text-base font-semibold"
-                    >
-                      🏁 Show Visual Guide
-                    </button>
-                    <button 
-                      onClick={loadSampleData} 
-                      className="btn-success flex items-center gap-2 px-6 py-3 text-base font-semibold"
-                    >
-                      🎯 Load Sample Data
-                    </button>
-                  </div>
-                </div>
+          /* ============ IMPORT VIEW ============ */
+          <div className="pt-2">
+            {/* Welcome Hero */}
+            <div className="text-center mb-8 animate-fade-in-up">
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium mb-4" style={{
+                background: 'var(--color-glass)',
+                border: '1px solid var(--color-glassBorder)',
+                color: 'var(--color-textSecondary)',
+              }}>
+                <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
+                Ready to analyze your performance
               </div>
-              
-              {showInfo && (
-                <div className="mb-4 p-6 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl animate-slide-in-left shadow-sm">
-                  <h3 className="font-bold text-xl mb-4 text-blue-800 flex items-center gap-2">
-                    <span className="text-2xl">📋</span>
-                    {t('instructionsTitle')}
-                  </h3>
-                  <div className="grid md:grid-cols-2 gap-6">
-                    <div>
-                      <h4 className="font-semibold text-blue-700 mb-3">Quick Steps:</h4>
-                      <ol className="list-decimal pl-5 space-y-2 text-blue-700">
-                        {t('instructionSteps').map((step, index) => (
-                          <li key={index} className="leading-relaxed">{step}</li>
-                        ))}
-                      </ol>
-                    </div>
-                    <div className="space-y-4">
-                      <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-                        <div className="flex items-center gap-2 mb-2">
-                          <span className="text-lg">🔒</span>
-                          <h4 className="font-semibold text-green-800">Privacy First</h4>
-                        </div>
-                        <p className="text-sm text-green-700">
-                          {t('privacyNote')}
-                        </p>
-                      </div>
-                      <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                        <div className="flex items-center gap-2 mb-2">
-                          <span className="text-lg">💡</span>
-                          <h4 className="font-semibold text-yellow-800">Pro Tip</h4>
-                        </div>
-                        <p className="text-sm text-yellow-700">
-                          Use Ctrl+A to select all data, then Ctrl+C to copy everything at once!
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
+              <h2 className="text-2xl md:text-3xl font-bold mb-3" style={{ color: 'var(--color-textPrimary)' }}>
+                Import your COTD data to get started
+              </h2>
+              <p className="text-base max-w-lg mx-auto" style={{ color: 'var(--color-textSecondary)' }}>
+                Enter your player name for automatic import, or paste data manually from{' '}
+                <a href="https://trackmania.io" target="_blank" rel="noopener noreferrer"
+                   className="underline font-medium" style={{ color: 'var(--color-primary)' }}>
+                  trackmania.io
+                </a>
+              </p>
             </div>
-            
-            <DataImportRevolutionary
-              pasteAreaContent={pasteAreaContent}
-              setPasteAreaContent={setPasteAreaContent}
-              onDataParsed={handleDataParsing}
-            />
-          </>
+
+            {/* Import Mode Tabs - Redesigned */}
+            <div className="flex gap-1 p-1 rounded-2xl mb-6 mx-auto max-w-md animate-fade-in-up" style={{
+              background: 'var(--color-backgroundSecondary)',
+              border: '1px solid var(--color-border)',
+            }}>
+              <button
+                onClick={() => setImportMode('auto')}
+                className="flex-1 py-2.5 px-4 rounded-xl font-medium text-sm transition-all flex items-center justify-center gap-2"
+                style={{
+                  backgroundColor: importMode === 'auto' ? 'var(--color-surface)' : 'transparent',
+                  color: importMode === 'auto' ? 'var(--color-textPrimary)' : 'var(--color-textMuted)',
+                  boxShadow: importMode === 'auto' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
+                }}
+              >
+                <span>🔍</span>
+                Auto-Fetch
+                {importMode === 'auto' && (
+                  <span className="text-[10px] px-1.5 py-0.5 rounded-full font-bold" style={{
+                    backgroundColor: 'var(--color-success)',
+                    color: 'white',
+                  }}>REC</span>
+                )}
+              </button>
+              <button
+                onClick={() => setImportMode('manual')}
+                className="flex-1 py-2.5 px-4 rounded-xl font-medium text-sm transition-all flex items-center justify-center gap-2"
+                style={{
+                  backgroundColor: importMode === 'manual' ? 'var(--color-surface)' : 'transparent',
+                  color: importMode === 'manual' ? 'var(--color-textPrimary)' : 'var(--color-textMuted)',
+                  boxShadow: importMode === 'manual' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
+                }}
+              >
+                <span>📋</span>
+                Manual Paste
+              </button>
+            </div>
+
+            {/* Auto-Fetch Mode */}
+            {importMode === 'auto' && (
+              <div className="animate-fade-in-up">
+                <PlayerLookup onDataLoaded={handleAutoFetchData} />
+              </div>
+            )}
+
+            {/* Manual Paste Mode */}
+            {importMode === 'manual' && (
+              <div className="animate-fade-in-up">
+                <div className="flex gap-3 mb-4">
+                  <button 
+                    onClick={() => setShowOnboarding(true)} 
+                    className="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-xl transition-all hover:scale-[1.02]"
+                    style={{
+                      backgroundColor: 'var(--color-surface)',
+                      color: 'var(--color-textPrimary)',
+                      border: '1px solid var(--color-border)',
+                    }}
+                  >
+                    📖 Visual Guide
+                  </button>
+                  <button 
+                    onClick={loadSampleData} 
+                    className="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-xl transition-all hover:scale-[1.02]"
+                    style={{
+                      backgroundColor: 'var(--color-surface)',
+                      color: 'var(--color-textPrimary)',
+                      border: '1px solid var(--color-border)',
+                    }}
+                  >
+                    🎯 Load Sample Data
+                  </button>
+                </div>
+                <DataImportRevolutionary
+                  pasteAreaContent={pasteAreaContent}
+                  setPasteAreaContent={setPasteAreaContent}
+                  onDataParsed={handleDataParsing}
+                />
+              </div>
+            )}
+          </div>
         ) : (
+          /* ============ DASHBOARD VIEW ============ */
           <>
-            <div className="flex justify-between items-center mb-6 animate-fade-in-up">
-              <h2 className="text-2xl font-semibold" style={{ color: 'var(--color-textPrimary)' }}>{t('yourAnalysis')}</h2>
+            {/* Action Bar */}
+            <div className="flex flex-wrap justify-between items-center mb-6 gap-3 animate-fade-in-up">
+              <h2 className="text-2xl font-bold" style={{ color: 'var(--color-textPrimary)' }}>
+                {t('yourAnalysis')}
+              </h2>
               <div className="flex gap-2">
-              <button 
-                onClick={() => setIsDataLoaded(false)} 
-                className="btn-primary"
-              >
-                {t('addData')}
-              </button>
-              <button 
-                onClick={exportData} 
-                className="btn-success"
-              >
-                {t('export')}
-              </button>
-              <button 
-                onClick={clearAllData} 
-                className="btn-danger"
-              >
-                {t('delete')}
-              </button>
+                <button 
+                  onClick={() => transitionToView(false)} 
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium transition-all hover:scale-[1.02] hover:shadow-md"
+                  style={{
+                    backgroundColor: 'var(--color-primary)',
+                    color: 'var(--color-textInverse)',
+                  }}
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                  </svg>
+                  Add Data
+                </button>
+                <button 
+                  onClick={exportData} 
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium transition-all hover:scale-[1.02]"
+                  style={{
+                    backgroundColor: 'var(--color-surface)',
+                    color: 'var(--color-textPrimary)',
+                    border: '1px solid var(--color-border)',
+                  }}
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                  </svg>
+                  Export
+                </button>
+                <button 
+                  onClick={clearAllData} 
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium transition-all hover:scale-[1.02]"
+                  style={{
+                    backgroundColor: 'transparent',
+                    color: 'var(--color-danger)',
+                    border: '1px solid var(--color-border)',
+                  }}
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                </button>
               </div>
             </div>
 
@@ -627,70 +714,34 @@ COTD 2025-04-29 #1
               <StatsOverviewRevolutionary playerData={displayData} timeRange={timeRange} />
             </div>
 
-            {/* Chart View Selection */}
-            <div className="card-glass p-4 mb-6 animate-fade-in-up">
-              <h3 className="text-lg font-semibold mb-4" style={{ color: 'var(--color-textPrimary)' }}>{t('analysisViews')}</h3>
-              <div className="flex flex-wrap gap-2">
-                <button 
-                  onClick={() => setActiveView('performance')} 
-                  className="py-2 px-4 rounded-lg transition-all transform hover:scale-105 interactive shadow-lg"
-                  style={{
-                    backgroundColor: activeView === 'performance' ? 'var(--color-primary)' : 'var(--color-secondary)',
-                    color: 'var(--color-textInverse)',
-                    border: `1px solid ${activeView === 'performance' ? 'var(--color-primary)' : 'var(--color-secondary)'}`,
-                    ...(activeView === 'performance' && { animation: 'glow 2s ease-in-out infinite' })
-                  }}
-                >
-                  {t('performance')}
-                </button>
-                <button 
-                  onClick={() => setActiveView('division')} 
-                  className="py-2 px-4 rounded-lg transition-all transform hover:scale-105 interactive shadow-lg"
-                  style={{
-                    backgroundColor: activeView === 'division' ? 'var(--color-primary)' : 'var(--color-secondary)',
-                    color: 'var(--color-textInverse)',
-                    border: `1px solid ${activeView === 'division' ? 'var(--color-primary)' : 'var(--color-secondary)'}`,
-                    ...(activeView === 'division' && { animation: 'glow 2s ease-in-out infinite' })
-                  }}
-                >
-                  {t('divisionDistribution')}
-                </button>
-                <button 
-                  onClick={() => setActiveView('divisionProgress')} 
-                  className="py-2 px-4 rounded-lg transition-all transform hover:scale-105 interactive shadow-lg"
-                  style={{
-                    backgroundColor: activeView === 'divisionProgress' ? 'var(--color-primary)' : 'var(--color-secondary)',
-                    color: 'var(--color-textInverse)',
-                    border: `1px solid ${activeView === 'divisionProgress' ? 'var(--color-primary)' : 'var(--color-secondary)'}`,
-                    ...(activeView === 'divisionProgress' && { animation: 'glow 2s ease-in-out infinite' })
-                  }}
-                >
-                  {t('divisionProgress')}
-                </button>
-                <button 
-                  onClick={() => setActiveView('divisionRank')} 
-                  className="py-2 px-4 rounded-lg transition-all transform hover:scale-105 interactive shadow-lg"
-                  style={{
-                    backgroundColor: activeView === 'divisionRank' ? 'var(--color-primary)' : 'var(--color-secondary)',
-                    color: 'var(--color-textInverse)',
-                    border: `1px solid ${activeView === 'divisionRank' ? 'var(--color-primary)' : 'var(--color-secondary)'}`,
-                    ...(activeView === 'divisionRank' && { animation: 'glow 2s ease-in-out infinite' })
-                  }}
-                >
-                  {t('divisionRank')}
-                </button>
-                <button 
-                  onClick={() => setActiveView('totalPlayers')} 
-                  className="py-2 px-4 rounded-lg transition-all transform hover:scale-105 interactive shadow-lg"
-                  style={{
-                    backgroundColor: activeView === 'totalPlayers' ? 'var(--color-primary)' : 'var(--color-secondary)',
-                    color: 'var(--color-textInverse)',
-                    border: `1px solid ${activeView === 'totalPlayers' ? 'var(--color-primary)' : 'var(--color-secondary)'}`,
-                    ...(activeView === 'totalPlayers' && { animation: 'glow 2s ease-in-out infinite' })
-                  }}
-                >
-                  {t('totalPlayers')}
-                </button>
+            {/* Chart View Tabs - Redesigned */}
+            <div className="rounded-2xl p-1.5 mb-6 animate-fade-in-up" style={{
+              background: 'var(--color-backgroundSecondary)',
+              border: '1px solid var(--color-border)',
+            }}>
+              <div className="flex flex-wrap gap-1">
+                {chartViews.map((view) => (
+                  <button
+                    key={view.id}
+                    onClick={() => setActiveView(view.id)}
+                    className="flex-1 min-w-0 py-2.5 px-3 rounded-xl text-sm font-medium transition-all"
+                    style={{
+                      backgroundColor: activeView === view.id ? 'var(--color-surface)' : 'transparent',
+                      color: activeView === view.id ? 'var(--color-textPrimary)' : 'var(--color-textMuted)',
+                      boxShadow: activeView === view.id ? '0 2px 8px rgba(0,0,0,0.08)' : 'none',
+                    }}
+                  >
+                    <div className="flex items-center justify-center gap-1.5">
+                      <span className="text-base">{view.icon}</span>
+                      <span className="hidden sm:inline">{view.label}</span>
+                    </div>
+                    {activeView === view.id && (
+                      <div className="text-[10px] mt-0.5 hidden sm:block" style={{ color: 'var(--color-textMuted)' }}>
+                        {view.desc}
+                      </div>
+                    )}
+                  </button>
+                ))}
               </div>
             </div>
             
@@ -709,13 +760,24 @@ COTD 2025-04-29 #1
               <ResultsTable playerData={displayData} />
             </div>
             
-            <div className="text-center text-sm text-gray-500 mt-8 card-glass p-4 animate-fade-in-up">
-              <p>{t('dataStoredLocally')}</p>
-              <p className="mt-1">{t('disclaimer')}</p>
-            </div>
+            {/* Footer */}
+            <footer className="text-center text-sm mt-8 p-5 rounded-2xl animate-fade-in-up" style={{
+              background: 'var(--color-glass)',
+              backdropFilter: 'blur(10px)',
+              border: '1px solid var(--color-glassBorder)',
+              color: 'var(--color-textMuted)',
+            }}>
+              <p className="flex items-center justify-center gap-1.5">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+                {t('dataStoredLocally')}
+              </p>
+              <p className="mt-1.5 text-xs opacity-75">{t('disclaimer')}</p>
+            </footer>
           </>
         )}
-      </div>
+      </main>
 
       {/* UX Enhancement Components */}
       <VisualStepGuide 

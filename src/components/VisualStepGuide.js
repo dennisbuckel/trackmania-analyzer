@@ -255,14 +255,14 @@ const VisualStepGuide = ({ isVisible, onComplete }) => {
   const currentStepData = steps[currentStep];
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-60 z-50 flex items-center justify-center p-4">
-      <div className={`bg-white rounded-2xl shadow-2xl w-full max-w-md transform transition-all duration-300 ${
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ backgroundColor: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)' }}>
+      <div className={`rounded-2xl shadow-2xl w-full max-w-md transform transition-all duration-300 ${
         isAnimating ? 'scale-95 opacity-80' : 'scale-100 opacity-100'
-      }`}>
+      }`} style={{ backgroundColor: 'var(--color-surface)' }}>
         
         {/* Header */}
-        <div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-t-2xl p-4">
-          <div className="flex items-center justify-between">
+        <div className="rounded-t-2xl p-4" style={{ background: 'linear-gradient(135deg, var(--color-gradientFrom), var(--color-gradientTo))' }}>
+          <div className="flex items-center justify-between text-white">
             <div className="flex items-center space-x-3">
               <div className="bg-white bg-opacity-20 rounded-full px-3 py-1 text-sm font-medium">
                 {currentStep + 1}/{steps.length}
@@ -286,7 +286,7 @@ const VisualStepGuide = ({ isVisible, onComplete }) => {
             {currentStepData.visual}
           </div>
           
-          <div className="text-gray-600 text-center mb-6 leading-relaxed">
+          <div className="text-center mb-6 leading-relaxed" style={{ color: 'var(--color-textSecondary)' }}>
             {currentStepData.description}
           </div>
 
@@ -295,13 +295,12 @@ const VisualStepGuide = ({ isVisible, onComplete }) => {
             {steps.map((_, index) => (
               <div
                 key={index}
-                className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                  index === currentStep 
-                    ? 'bg-blue-500 w-6' 
-                    : index < currentStep 
-                      ? 'bg-green-400' 
-                      : 'bg-gray-300'
-                }`}
+                className="rounded-full transition-all duration-300"
+                style={{
+                  width: index === currentStep ? '24px' : '8px',
+                  height: '8px',
+                  backgroundColor: index === currentStep ? 'var(--color-primary)' : index < currentStep ? 'var(--color-success)' : 'var(--color-border)',
+                }}
               />
             ))}
           </div>
@@ -311,25 +310,29 @@ const VisualStepGuide = ({ isVisible, onComplete }) => {
             <button
               onClick={prevStep}
               disabled={currentStep === 0}
-              className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                currentStep === 0 
-                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
-                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300 hover:scale-105'
-              }`}
+              className="px-4 py-2 rounded-xl font-medium transition-all"
+              style={{
+                backgroundColor: currentStep === 0 ? 'var(--color-backgroundSecondary)' : 'var(--color-backgroundSecondary)',
+                color: currentStep === 0 ? 'var(--color-textMuted)' : 'var(--color-textPrimary)',
+                cursor: currentStep === 0 ? 'not-allowed' : 'pointer',
+                opacity: currentStep === 0 ? 0.5 : 1,
+              }}
             >
               ← Back
             </button>
 
             <button
               onClick={skipTour}
-              className="text-gray-500 hover:text-gray-700 text-sm font-medium transition-colors"
+              className="text-sm font-medium transition-colors"
+              style={{ color: 'var(--color-textMuted)' }}
             >
               Skip Tour
             </button>
 
             <button
               onClick={nextStep}
-              className="px-6 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-all hover:scale-105 flex items-center"
+              className="px-6 py-2 rounded-xl font-medium transition-all hover:scale-105 flex items-center text-white"
+              style={{ backgroundColor: 'var(--color-primary)' }}
             >
               {currentStep === steps.length - 1 ? (
                 <>

@@ -2,19 +2,21 @@
 import React, { useState } from 'react';
 import { getTranslation } from '../i18n/translations';
 import parseTrackmaniaIoData from '../utils/parseTrackmaniaIoData';
+import { useToast } from './Toast';
 
 const DataImportRevolutionary = ({ pasteAreaContent, setPasteAreaContent, onDataParsed }) => {
   const [loading, setLoading] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const [parseResult, setParseResult] = useState(null);
   const [showPreview, setShowPreview] = useState(false);
+  const toast = useToast();
   
   // Language is now fixed to English
   const t = (key, params = {}) => getTranslation(key, 'en', params);
 
   const handleProcessData = async () => {
     if (!pasteAreaContent) {
-      alert('❌ Please paste data from trackmania.io first.');
+      toast.warning('Please paste data from trackmania.io first.', { title: 'No Data' });
       return;
     }
 
@@ -37,10 +39,10 @@ const DataImportRevolutionary = ({ pasteAreaContent, setPasteAreaContent, onData
           setShowPreview(false);
         }, 2000);
       } else {
-        alert('❌ No valid data found. Please check the format.');
+        toast.error('No valid data found. Please check the format.', { title: 'Parse Failed' });
       }
     } catch (error) {
-      alert(`❌ Parsing error: ${error.message}`);
+      toast.error(`Parsing error: ${error.message}`, { title: 'Parse Error' });
       setParseResult({
         results: [],
         errors: [error.message],
@@ -52,10 +54,11 @@ const DataImportRevolutionary = ({ pasteAreaContent, setPasteAreaContent, onData
   };
 
   const clearContent = () => {
-    if (pasteAreaContent && window.confirm('Do you want to clear the content?')) {
+    if (pasteAreaContent) {
       setPasteAreaContent('');
       setParseResult(null);
       setShowPreview(false);
+      toast.info('Content cleared.', { duration: 2000 });
     }
   };
 

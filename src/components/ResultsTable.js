@@ -85,23 +85,20 @@ const ResultsTable = ({ playerData }) => {
   // Column header with sort indicator
   const SortableHeader = ({ column, label }) => (
     <th 
-      className="py-2 px-3 text-left cursor-pointer transition-colors duration-200"
+      className="py-3 px-3 text-left text-xs font-semibold uppercase tracking-wider cursor-pointer transition-colors duration-200 select-none"
       onClick={() => handleSort(column)}
-      style={{
-        color: 'var(--color-textPrimary)',
-        ':hover': {
-          backgroundColor: 'var(--color-surfaceHover)'
-        }
-      }}
-      onMouseEnter={(e) => e.target.style.backgroundColor = 'var(--color-surfaceHover)'}
-      onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+      style={{ color: sortBy === column ? 'var(--color-primary)' : 'var(--color-textMuted)' }}
+      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--color-surfaceHover)'}
+      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
     >
-      <div className="flex items-center">
+      <div className="flex items-center gap-1">
         {label}
-        {sortBy === column && (
-          <span className="ml-1" style={{ color: 'var(--color-primary)' }}>
+        {sortBy === column ? (
+          <span style={{ color: 'var(--color-primary)' }}>
             {sortOrder === 'asc' ? '↑' : '↓'}
           </span>
+        ) : (
+          <span className="opacity-0 group-hover:opacity-30">↕</span>
         )}
       </div>
     </th>
@@ -150,40 +147,42 @@ const ResultsTable = ({ playerData }) => {
         </div>
       </div>
       
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto rounded-xl">
         <table className="min-w-full">
           <thead>
-            <tr style={{ backgroundColor: 'var(--color-backgroundSecondary)', borderBottom: `1px solid var(--color-border)` }}>
+            <tr style={{ backgroundColor: 'var(--color-backgroundSecondary)', borderBottom: `2px solid var(--color-border)` }}>
               <SortableHeader column="date" label="Date" />
-              <th className="py-2 px-3 text-left" style={{ color: 'var(--color-textPrimary)' }}>Map</th>
-              <SortableHeader column="division" label="Division" />
+              <th className="py-3 px-3 text-left text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--color-textMuted)' }}>Map</th>
+              <SortableHeader column="division" label="Div" />
               <SortableHeader column="divisionRank" label="Div. Rank" />
-              <SortableHeader column="overallRank" label="Overall Rank" />
+              <SortableHeader column="overallRank" label="Overall" />
               <SortableHeader column="percentile" label="Top %" />
-              <SortableHeader column="qualificationRank" label="Quali Rank" />
+              <SortableHeader column="qualificationRank" label="Quali" />
             </tr>
           </thead>
           <tbody>
             {displayData.map((item, idx) => (
               <tr
                 key={idx}
-                className="transition-colors duration-200 hover:opacity-80"
+                className="group transition-colors duration-150 cursor-default"
                 style={{
                   backgroundColor: idx % 2 === 0 ? 'var(--color-backgroundSecondary)' : 'var(--color-surface)',
-                  color: 'var(--color-textPrimary)'
+                  color: 'var(--color-textPrimary)',
                 }}
-                onMouseEnter={(e) => e.target.style.backgroundColor = 'var(--color-surfaceHover)'}
-                onMouseLeave={(e) => e.target.style.backgroundColor = idx % 2 === 0 ? 'var(--color-backgroundSecondary)' : 'var(--color-surface)'}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--color-surfaceHover)'}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = idx % 2 === 0 ? 'var(--color-backgroundSecondary)' : 'var(--color-surface)'}
               >
-                <td className="py-2 px-3" style={{ borderBottom: `1px solid var(--color-border)` }}>{formatDate(item.date)}</td>
-                <td className="py-2 px-3 font-medium" style={{ borderBottom: `1px solid var(--color-border)` }} title={item.map}>
-                  {item.map ? (
-                    item.map.length > 30 ? `${item.map.substring(0, 27)}...` : item.map
-                  ) : '-'}
+                <td className="py-2.5 px-3 text-sm" style={{ borderBottom: `1px solid var(--color-border)` }}>{formatDate(item.date)}</td>
+                <td className="py-2.5 px-3 text-sm font-medium max-w-[200px] truncate" style={{ borderBottom: `1px solid var(--color-border)` }} title={item.map}>
+                  {item.map || '-'}
                 </td>
-                <td className="py-2 px-3" style={{ borderBottom: `1px solid var(--color-border)` }}>
+                <td className="py-2.5 px-3 text-sm" style={{ borderBottom: `1px solid var(--color-border)` }}>
                   {item.division ? (
-                    <span className="font-medium" style={{
+                    <span className="inline-flex items-center justify-center w-7 h-7 rounded-lg text-xs font-bold" style={{
+                      backgroundColor: item.division <= 1 ? 'rgba(16,185,129,0.15)' :
+                                       item.division <= 3 ? 'rgba(59,130,246,0.15)' :
+                                       item.division <= 5 ? 'rgba(139,92,246,0.15)' :
+                                       'rgba(107,114,128,0.1)',
                       color: item.division <= 1 ? 'var(--color-success)' :
                              item.division <= 3 ? 'var(--color-primary)' :
                              item.division <= 5 ? 'var(--color-accent)' :
@@ -193,19 +192,19 @@ const ResultsTable = ({ playerData }) => {
                     </span>
                   ) : '-'}
                 </td>
-                <td className="py-2 px-3" style={{ borderBottom: `1px solid var(--color-border)` }}>
+                <td className="py-2.5 px-3 text-sm" style={{ borderBottom: `1px solid var(--color-border)` }}>
                   {item.divisionRank ? (
                     <span className={item.divisionRank <= 8 ? 'font-bold' : ''}>
                       {item.divisionRank}{item.divisionPlayers ? `/${item.divisionPlayers}` : ''}
                     </span>
                   ) : '-'}
                 </td>
-                <td className="py-2 px-3" style={{ borderBottom: `1px solid var(--color-border)` }}>
+                <td className="py-2.5 px-3 text-sm" style={{ borderBottom: `1px solid var(--color-border)` }}>
                   {item.overallRank ? `${item.overallRank}/${item.totalPlayers || '?'}` : '-'}
                 </td>
-                <td className="py-2 px-3" style={{ borderBottom: `1px solid var(--color-border)` }}>
+                <td className="py-2.5 px-3 text-sm" style={{ borderBottom: `1px solid var(--color-border)` }}>
                   {item.percentile ? (
-                    <span className="font-medium" style={{
+                    <span className="font-semibold" style={{
                       color: item.percentile <= 5 ? 'var(--color-success)' :
                              item.percentile <= 15 ? 'var(--color-primary)' :
                              item.percentile <= 30 ? 'var(--color-accent)' :
@@ -215,7 +214,7 @@ const ResultsTable = ({ playerData }) => {
                     </span>
                   ) : '-'}
                 </td>
-                <td className="py-2 px-3" style={{ borderBottom: `1px solid var(--color-border)` }}>
+                <td className="py-2.5 px-3 text-sm" style={{ borderBottom: `1px solid var(--color-border)` }}>
                   {item.qualificationRank ? (
                     `${item.qualificationRank}/${item.qualificationTotal || '?'}`
                   ) : '-'}
