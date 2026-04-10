@@ -1,0 +1,19 @@
+{
+  "rewrites": [
+    {
+      "source": "/tmio-api/:path*",
+      "destination": "https://trackmania.io/api/:path*"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/tmio-api/:path*",
+      "headers": [
+        {
+          "key": "User-Agent",
+          "value": "trackmania-analyzer/2.0"
+        }
+      ]
+    }
+  ]
+}
