@@ -5,7 +5,6 @@ import PlayerLookup from './PlayerLookup';
 import StatsOverviewRevolutionary from './StatsOverviewRevolutionary';
 import ChartsSection from './ChartsSection';
 import ResultsTable from './ResultsTable';
-import VisualStepGuide from './VisualStepGuide';
 import ThemeSelector from './ThemeSelector';
 import KeyboardShortcuts from './KeyboardShortcuts';
 import parseTrackmaniaIoData from '../utils/parseTrackmaniaIoData';
@@ -26,7 +25,6 @@ const TrackmaniaApp = () => {
   const [timeRange, setTimeRange] = useState('all');
   
   // UX Enhancement states
-  const [showOnboarding, setShowOnboarding] = useState(false);
   const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
   const [isFirstTime, setIsFirstTime] = useState(true);
   
@@ -57,7 +55,6 @@ const TrackmaniaApp = () => {
   // Load data on first render
   useEffect(() => {
     const savedData = localStorage.getItem('trackmaniaData');
-    const hasSeenOnboarding = localStorage.getItem('cotd-onboarding-seen');
     
     if (savedData) {
       try {
@@ -73,10 +70,6 @@ const TrackmaniaApp = () => {
       }
     }
     
-    // Show onboarding for first-time users
-    if (!hasSeenOnboarding && !savedData) {
-      setTimeout(() => setShowOnboarding(true), 1000);
-    }
   }, []);
 
   // Smooth view transitions
@@ -264,7 +257,6 @@ const TrackmaniaApp = () => {
         break;
       case 'close-dialogs':
         setShowAdvancedSearch(false);
-        setShowOnboarding(false);
         break;
       case 'refresh-data':
         const savedData = localStorage.getItem('trackmaniaData');
@@ -335,12 +327,6 @@ const TrackmaniaApp = () => {
     if (isFirstTime) {
       setIsFirstTime(false);
     }
-  };
-
-  // Onboarding completion
-  const handleOnboardingComplete = () => {
-    setShowOnboarding(false);
-    localStorage.setItem('cotd-onboarding-seen', 'true');
   };
 
   // Load sample data function
@@ -627,17 +613,6 @@ Porcelain
               <div className="animate-fade-in-up">
                 <div className="flex gap-3 mb-4">
                   <button 
-                    onClick={() => setShowOnboarding(true)} 
-                    className="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-xl transition-all hover:scale-[1.02]"
-                    style={{
-                      backgroundColor: 'var(--color-surface)',
-                      color: 'var(--color-textPrimary)',
-                      border: '1px solid var(--color-border)',
-                    }}
-                  >
-                    📖 Visual Guide
-                  </button>
-                  <button 
                     onClick={loadSampleData} 
                     className="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-xl transition-all hover:scale-[1.02]"
                     style={{
@@ -779,11 +754,6 @@ Porcelain
         )}
       </main>
 
-      {/* UX Enhancement Components */}
-      <VisualStepGuide 
-        isVisible={showOnboarding} 
-        onComplete={handleOnboardingComplete} 
-      />
     </div>
   );
 };
